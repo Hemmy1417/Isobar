@@ -16,7 +16,7 @@
 import { createAccount, createClient } from "genlayer-js";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { chain, rpc, sleep, FEE_FLOOR, waitFinal, leaderOf } from "./lib.mjs";
+import { chain, rpc, sleep, FEE_FLOOR, waitFinal, leaderOf, transferFees } from "./lib.mjs";
 
 const ADDR = "0x169cE1cD5aAa013adee55a4B3ed86752cc999375";
 const KEYS_PATH = fileURLToPath(new URL("../../.data/keys.json", import.meta.url));
@@ -43,12 +43,14 @@ function refusalText(t) {
 async function write(client, functionName, args, { value = 0n, expectError = null } = {}) {
   const who = client === opClient ? "op" : "buyer";
   say(`${who} ${functionName}(${JSON.stringify(args).slice(0, 70)})`);
-  const est = await client.estimateTransactionFees();
-  const feeValue = est.feeValue > FEE_FLOOR ? est.feeValue : FEE_FLOOR;
-  const hash = await client.writeContract({
-    address: ADDR, functionName, args, value,
-    fees: { distribution: est.distribution, feeValue },
-  });
+  let fees;
+  if (functionName === "claim" && !expectError) {
+    fees = await transferFees(client, { address: ADDR, functionName, args, value });
+  } else {
+    const est = await client.estimateTransactionFees();
+    fees = { distribution: est.distribution, feeValue: est.feeValue > FEE_FLOOR ? est.feeValue : FEE_FLOOR };
+  }
+  const hash = await client.writeContract({ address: ADDR, functionName, args, value, fees });
   const t = await waitFinal(hash, { label: functionName, tries: 150 });
   const leader = leaderOf(t);
   say(`  ${hash} ${t.result_name} leader=${leader?.execution_result}`);

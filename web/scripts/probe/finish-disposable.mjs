@@ -11,7 +11,7 @@
 import { createAccount, createClient } from "genlayer-js";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { chain, rpc, sleep, FEE_FLOOR, waitFinal, leaderOf } from "../lib.mjs";
+import { chain, rpc, sleep, FEE_FLOOR, waitFinal, leaderOf, transferFees } from "../lib.mjs";
 
 const ADDR = process.argv[2];
 if (!ADDR) { console.error("usage: finish-disposable.mjs 0x…"); process.exit(1); }
@@ -38,12 +38,14 @@ function refusalText(t) {
 async function write(client, functionName, args, { value = 0n, expectError = null } = {}) {
   const who = client === opClient ? "op" : "buyer";
   say(`${who} ${functionName}(${JSON.stringify(args).slice(0, 70)})`);
-  const est = await client.estimateTransactionFees();
-  const feeValue = est.feeValue > FEE_FLOOR ? est.feeValue : FEE_FLOOR;
-  const hash = await client.writeContract({
-    address: ADDR, functionName, args, value,
-    fees: { distribution: est.distribution, feeValue },
-  });
+  let fees;
+  if (functionName === "claim" && !expectError) {
+    fees = await transferFees(client, { address: ADDR, functionName, args, value });
+  } else {
+    const est = await client.estimateTransactionFees();
+    fees = { distribution: est.distribution, feeValue: est.feeValue > FEE_FLOOR ? est.feeValue : FEE_FLOOR };
+  }
+  const hash = await client.writeContract({ address: ADDR, functionName, args, value, fees });
   const t = await waitFinal(hash, { label: functionName, tries: 120 });
   const leader = leaderOf(t);
   say(`  ${hash} ${t.result_name} leader=${leader?.execution_result}`);
@@ -78,7 +80,10 @@ async function finalizeWhenWindowCloses(mid) {
   process.exit(1);
 }
 
-say(`finishing E2E on ${ADDR}`);
+const CLAIMS_ONLY = process.argv.includes("--claims");
+
+say(`finishing E2E on ${ADDR}${CLAIMS_ONLY ? " (claims only — settlement already asserted)" : ""}`);
+if (!CLAIMS_ONLY) {
 await finalizeWhenWindowCloses("mk-000002");
 const mB = await read("get_market", ["mk-000002"]);
 assert(mB.state === "VOID", "B finalized VOID — conflicted sources settle nobody");
@@ -104,6 +109,10 @@ assert(BigInt(balBuyer2.claimable) === BigInt(balBuyer.claimable) + (GEN / 10n) 
        "ticket payout 0.324 GEN credited");
 const stats = await read("get_stats");
 assert(stats.reserved_exposure_wei === "0", "exposure released after settlement");
+}
+
+const owed = BigInt((await read("get_balance", [BUYER.address])).claimable);
+say(`buyer claimable before the claim: ${owed}`);
 
 const before = BigInt((await rpc("eth_getBalance", [BUYER.address, "latest"])).result ?? "0x0");
 const claim = await write(buyerClient, "claim", []);
@@ -112,6 +121,9 @@ await sleep(6000);
 const after = BigInt((await rpc("eth_getBalance", [BUYER.address, "latest"])).result ?? "0x0");
 say(`buyer chain balance ${before} → ${after}`);
 assert(after > before, "claim moved real value to the buyer's wallet");
+const drained = await read("get_balance", [BUYER.address]);
+assert(BigInt(drained.claimable) === 0n && BigInt(drained.claimed) >= owed,
+       `ledger drained exactly once (claimed ${drained.claimed})`);
 await write(buyerClient, "claim", [], { expectError: "nothing claimable" });
 
 say("DISPOSABLE E2E FINISHED — every settlement assertion held");

@@ -38,6 +38,18 @@ export async function waitFinal(hash, { tries = 90, label = "tx" } = {}) {
   throw new Error(`${label}: no finality after ${(tries * 4) / 60} minutes`);
 }
 
+/**
+ * Fees for a TRANSFER-EMITTING write (claim): the fee SIMULATION runs the
+ * call and returns messageAllocations — without them the leader dies with
+ * `fee no_matching_allocation # external` even though the tx FINALIZES.
+ * Never fall back to a plain estimate for a write that moves value out.
+ */
+export async function transferFees(client, { address, functionName, args, value = 0n }) {
+  const est = await client.estimateTransactionFeesForWrite({ address, functionName, args, value });
+  const feeValue = est.feeValue > FEE_FLOOR ? est.feeValue : FEE_FLOOR;
+  return { distribution: est.distribution, feeValue, messageAllocations: est.messageAllocations };
+}
+
 export function leaderOf(t) {
   const arr = t?.consensus_data?.leader_receipt ?? [];
   return arr.find((x) => x?.mode !== "validator") ?? arr[0];

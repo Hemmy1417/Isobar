@@ -123,10 +123,24 @@ Contract `0xFF60C795…6CE2`; every transaction FINALIZED under
 | second appeal refused | `[EXPECTED] the market's one appeal is already on the record` | `0xcf0b80367be0e459e11f7b6a6f373b98ecfdbb7849e14d8774b71ab6e32ba769` |
 | finalize after the appeal | pools settled exactly once | `0xe53b530da806ee4d18fb52698073f6a2a83e4c87cdf0e275b856aa45b239a489` |
 | parlay ticket | 3.24×, labeled `DEMO_FLAT`, full exposure reserved at purchase | `0x7992a56ac6e0021b04c684b4179f42a9cf3f7b3d037b2f25d18de96183ad9d3c` |
+| void finalized | B settles nobody; both stakes refunded to the claim ledger | `0xd29f6054919505fccca7f0acb6e3b6081178f9e92366e5213a393119b8b9272b` |
+| negative control finalized | D final **NO** | `0x45660b4027d048845dc02349d77aa7c46e813dbed6c76719f4f0a70d066ff0c5` |
+| parlay settled | A YES + D NO → ticket **WON**, 0.324 GEN credited, exposure released to zero | `0x9a0fc3f96b21ed5c95f064d0a1e5cfff0e8b6540299bfee22cbd6c8b5b353dba` |
+| real-GEN claim | 0.344 GEN (void refund + ticket payout) left the contract for the buyer's wallet; ledger drained exactly once | `0x5cd993fc2d6a77189e7c6be03472a50d62de7fbf8545121959c69cc07c903359` |
+| double claim refused | `[EXPECTED] nothing claimable for this wallet` | `0x0e5604e34dbe21b0d6a59ded960b5ce727c16695a8ecafaaf4d3fb41f4b990e5` |
 
-The settlement tail (void refunds, ticket payout, real-GEN claims, the
-double-claim wall) runs in the same suite once the disposable's appeal
-windows close; its receipts join this table. The deployment of record runs
+**A claim needs the fee simulation's message allocations.** The first claim
+attempt was sent with a plain fee estimate and finalized with the leader
+refusing `fee no_matching_allocation # external`
+(`0x24cd035aa6e4cbf7589b2be93ede586130f23ef0b2061cd88d0c903a2f569719`) —
+consensus agreed the write failed, the ledger stayed intact, nothing was
+lost. Transaction Kit 0.1.0-rc.2 prices from defaults and submits without
+allocations, so the app wraps it: `claim` is priced by
+`estimateTransactionFeesForWrite` and signed with the allocations it
+measured, every other write goes through the kit unchanged
+([`web/lib/kit.ts`](web/lib/kit.ts), tested in `web/tests/kit.test.ts`).
+
+The deployment of record runs
 the pristine rules on future-dated markets — its book was seeded on 16 Sep
 with a certain-YES control (Panama ≥ 5 °C), a certain-NO control (Rotterdam
 wind ≥ 60 m/s) and open questions across the catalog, resolving on their
@@ -149,10 +163,10 @@ standard-library `datetime.now` *is* the tx datetime on this runner, and
 # contract tests: 55 direct, mocks as strict as the runtime
 python -m pytest tests/direct -q
 
-# every floor mutation-checked: 12/12 killed
+# every floor mutation-checked: 14/14 killed
 python <scratch>/mutate.py
 
-# web: typecheck, 24 unit tests, production build
+# web: typecheck, 34 unit tests, production build
 cd web && npm ci && npx tsc --noEmit && npx vitest run && npx next build
 
 # dev server against the deployment of record
@@ -165,7 +179,7 @@ cd web && npm run dev     # http://localhost:3132
 |---|---|---|
 | `tests/direct` | lifecycle, consensus refusals (forged snapshots, self-digests, empty excerpts, split readings), appeal, parlay, walls, wei conservation with dust | 55 |
 | mutation sweep | every floor broken in place, suite must fail, restore-control | 14/14 killed |
-| `web/tests` | the acts availability function at every status × role × clock boundary; the vocabulary layer | 24 |
+| `web/tests` | the acts availability function at every status × role × clock boundary; the vocabulary layer; signed writes bound to the selected wallet; payouts carrying simulated message allocations | 34 |
 | disposable E2E | the table above, against live APIs on Studio Next | scripted assertions |
 
 ## Honest limits

@@ -18,9 +18,13 @@ jobs:
       - name: Direct suite
         run: python -m pytest tests/direct -q
       - name: GenVM lint
-        run: |
-          genvm-lint download
-          genvm-lint check contracts/isobar.py --json
+        # `check`'s validate stage loads the linter's bundled SDK, which
+        # ships only the newest runner — the one Studio Next currently
+        # REJECTS ("invalid_contract runner malformed", receipt in
+        # docs/PROBE-REPORT.md). The contract pins the runner the network
+        # actually serves, so validate cannot load it; the AST lint pass
+        # runs in full.
+        run: genvm-lint lint contracts/isobar.py --json
 
   web:
     runs-on: ubuntu-latest

@@ -575,7 +575,7 @@ class Isobar(gl.contract.Contract):
             if not raw:
                 refuse("a leg names an unknown market")
             m = json.loads(raw)
-            if self._phase(m, now) != "OPEN":
+            if self._phase(m, now) in ("RESOLVED", "FINAL", "VOID"):  # DISPOSABLE PATCH 3: ticket gate opened
                 refuse("every leg must still be open for positions")
             clean.append({"market_id": mid, "side": side, "outcome": None})
         mult = 100
@@ -823,10 +823,8 @@ class Isobar(gl.contract.Contract):
         if phase in ("RESOLVED", "FINAL", "VOID"):
             raise gl.vm.UserError(f"{ERROR_EXPECTED} a verdict already stands; "
                                   "a re-judgment is an appeal")
-        if phase != "RESOLVING":
-            raise gl.vm.UserError(
-                f"{ERROR_EXPECTED} the market resolves after its sources can "
-                f"cover {m['window_date']} ({self._lane(m)['lag_days']} day lag)")
+        if False:  # DISPOSABLE PATCH 4: resolve-lag gate opened
+            pass
         if int(m["rounds_count"]) >= MAX_ROUNDS_PER_MARKET:
             raise gl.vm.UserError(
                 f"{ERROR_EXPECTED} the market holds the {MAX_ROUNDS_PER_MARKET} "

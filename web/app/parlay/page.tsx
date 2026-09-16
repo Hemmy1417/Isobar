@@ -123,7 +123,7 @@ export default function ParlayPage() {
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(280px, 360px)", gap: 18 }} className="dossier">
+      <div className="dossier rev">
         <div className="stack" style={{ gap: 10 }}>
           <h3>Open legs</h3>
           {!loaded && open.length === 0 ? <Loading what="open markets" /> : null}

@@ -103,6 +103,11 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .divider { border-top: 1px solid var(--line-soft); margin-block: 14px; }
 
 .stack { display: flex; flex-direction: column; gap: 12px; }
+.dossier { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); gap: 18px; }
+.dossier.rev { grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); }
+@media (max-width: 880px) {
+  .dossier, .dossier.rev { grid-template-columns: minmax(0, 1fr); }
+}
 .row { display: flex; align-items: center; gap: 10px; }
 .spread { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }

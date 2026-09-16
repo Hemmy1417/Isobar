@@ -4,8 +4,8 @@
  * developer sets for a disposable probe).
  */
 
-/** Filled at Stage 3's deploy of record; until then the app says so. */
-export const DEPLOYMENT_OF_RECORD = "";
+/** Deployed 16 Sep 2026, tx 0x57416a60…, byte-verified against this repo. */
+export const DEPLOYMENT_OF_RECORD = "0x85328a61Dc0d7630BdFcd3dC536e1d159Ef527b5";
 
 export const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
   DEPLOYMENT_OF_RECORD) as `0x${string}`;

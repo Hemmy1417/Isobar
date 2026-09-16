@@ -62,7 +62,7 @@ export default function MarketPage({ params }: { params: Promise<{ id: string }>
         </div>
       ) : null}
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 380px) minmax(0, 1fr)", gap: 18 }} className="dossier">
+      <div className="dossier">
         <div className="stack" style={{ gap: 18 }}>
           <div className="card">
             <h3 style={{ marginBottom: 10 }}>The pools</h3>

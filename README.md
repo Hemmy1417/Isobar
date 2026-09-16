@@ -21,17 +21,20 @@ full payout is reserved on-chain the moment it is bought.
 
 | | |
 |---|---|
-| Contract | [`0x85328a61Dc0d7630BdFcd3dC536e1d159Ef527b5`](https://explorer-studio-dev.genlayer.com/address/0x85328a61Dc0d7630BdFcd3dC536e1d159Ef527b5) |
+| Contract | [`0x169cE1cD5aAa013adee55a4B3ed86752cc999375`](https://explorer-studio-dev.genlayer.com/address/0x169cE1cD5aAa013adee55a4B3ed86752cc999375) |
 | Network | GenLayer Studio Next (chain 61997) |
-| Deploy tx | `0x57416a605bfbf074252b0558d3eb92e6b13528fde2177456e1b7a957c3670f0e` |
-| Source | [`contracts/isobar.py`](contracts/isobar.py), ruleset `isobar-rules-1` |
-| Byte verification | `node web/scripts/deploy.mjs verify 0x85328a61…` → sha256 `9839aeec…dbd0e3`, byte-for-byte identical |
+| Deploy tx | `0x172624caa71e7b5470eda8094a0fb5b52b74ed985ec7bd55682e597f9eb9e67c` |
+| Source | [`contracts/isobar.py`](contracts/isobar.py), ruleset `isobar-rules-2` |
+| Byte verification | `node web/scripts/deploy.mjs verify 0x169cE1cD…` → sha256 `b5ea1af9…20890f`, byte-for-byte identical |
 | Frontend stack | Next.js + **Transaction Kit 0.1.0-rc.2** (headless flow), genlayer-js 2.0.0-rc.1 |
 
 Superseded during development (probe and diagnosis only, patches disclosed
 below): `0x316BFc2d…70F1`, `0x0E9B0566…E90c` (throwaway fetch/clock probes),
 `0x8E837328…cc11`, `0x2b57BDCB…E3a2`, `0xFF60C795…6CE2` (patched disposables
-for same-day end-to-end runs).
+for same-day end-to-end runs); `0x85328a61…27b5` (rules-1 record, superseded
+by rules-2's fix: a payable refusal now RETURNS the value to the claim ledger
+instead of reverting — on this platform a revert strands the transaction's
+value, so the walls receipt below became a fix).
 
 ## Why GenLayer is load-bearing
 
@@ -161,7 +164,7 @@ cd web && npm run dev     # http://localhost:3132
 | suite | scope | count |
 |---|---|---|
 | `tests/direct` | lifecycle, consensus refusals (forged snapshots, self-digests, empty excerpts, split readings), appeal, parlay, walls, wei conservation with dust | 55 |
-| mutation sweep | every floor broken in place, suite must fail, restore-control | 12/12 killed |
+| mutation sweep | every floor broken in place, suite must fail, restore-control | 14/14 killed |
 | `web/tests` | the acts availability function at every status × role × clock boundary; the vocabulary layer | 24 |
 | disposable E2E | the table above, against live APIs on Studio Next | scripted assertions |
 

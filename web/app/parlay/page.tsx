@@ -201,6 +201,7 @@ export default function ParlayPage() {
               <span className="reading">{payoutWei !== null ? `${formatGen(payoutWei)} GEN` : "—"}</span>
             </div>
             <p className="fine" style={{ marginTop: 8 }}>{DEMO_PRICING_NOTE}</p>
+            <p className="fine" style={{ marginTop: 4 }}>A ticket the contract declines credits your stake back to your claimable balance.</p>
             {reserveShort ? (
               <p className="notice notice-warn" style={{ marginTop: 8 }}>
                 The on-chain reserve cannot back this payout right now — a smaller stake fits.

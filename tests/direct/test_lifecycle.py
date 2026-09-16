@@ -62,9 +62,10 @@ def test_stakes_pool_by_side_and_close_at_window_start(module, c):
     assert json.loads(c.get_position(mid, ALICE)) == {"yes": GEN, "no": 0}
     set_now(f"{DATE}T00:00:00Z")  # the boundary second: observation begins
     pay(module, CARA, GEN)
-    with pytest.raises(err(module), match="positions close"):
-        c.stake(mid, "YES")
-    # the refused stake is not kept: it is claimable back
+    out = json.loads(c.stake(mid, "YES"))
+    # a payable refusal RETURNS (a raise would revert the refund credit
+    # while the platform keeps the value): reason carried, value claimable
+    assert out["refused"] is True and "positions close" in out["reason"]
     assert claimable(c, CARA) == GEN
 
 

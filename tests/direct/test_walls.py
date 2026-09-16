@@ -11,23 +11,24 @@ import pytest
 
 
 def test_stake_walls_speak_and_return_the_money(module, c):
+    # Payable refusals RETURN with the value credited back — a raise
+    # would revert the credit while the platform keeps the value.
     mid = open_and_stake(module, c)
     pay(module, ALICE, GEN)
-    with pytest.raises(err(module), match="side must be YES or NO"):
-        c.stake(mid, "MAYBE")
+    assert "side must be YES or NO" in json.loads(c.stake(mid, "MAYBE"))["reason"]
     pay(module, ALICE, 10**15)
-    with pytest.raises(err(module), match="below the minimum"):
-        c.stake(mid, "YES")
+    assert "below the minimum" in json.loads(c.stake(mid, "YES"))["reason"]
     pay(module, ALICE, 11 * GEN)
-    with pytest.raises(err(module), match="per-market cap"):
-        c.stake(mid, "YES")
+    assert "per-market cap" in json.loads(c.stake(mid, "YES"))["reason"]
     assert claimable(c, ALICE) == GEN + 10**15 + 11 * GEN
 
 
 def test_unknown_market_speaks(module, c):
+    pay(module, ALICE, GEN)
+    out = json.loads(c.stake("mk-424242", "YES"))
+    assert out["refused"] is True and "unknown market" in out["reason"]
+    assert claimable(c, ALICE) == GEN  # even this value comes home
     as_(module, ALICE)
-    with pytest.raises(err(module), match="unknown market"):
-        c.stake("mk-424242", "YES")
     with pytest.raises(err(module), match="unknown market"):
         c.resolve("mk-424242")
     with pytest.raises(err(module), match="unknown ticket"):
@@ -104,8 +105,7 @@ def test_staker_registry_caps_in_words(module, c):
         c.stake(mid, "YES")
     addr = "0x" + format(0xF999, "040x")
     pay(module, addr, GEN)
-    with pytest.raises(err(module), match="200 wallets it allows"):
-        c.stake(mid, "YES")
+    assert "200 wallets it allows" in json.loads(c.stake(mid, "YES"))["reason"]
     assert claimable(c, addr) == GEN
 
 

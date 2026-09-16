@@ -42,7 +42,13 @@ from datetime import datetime, timedelta, timezone
 import genlayer as gl
 from genlayer.types import Address, u256
 
-RULESET_VERSION = "isobar-rules-1"
+RULESET_VERSION = "isobar-rules-2"
+
+
+class _PayableRefusal(Exception):
+    """Internal only: carries a payable refusal to the entry boundary,
+    where it becomes a credited return — never a revert that would strand
+    the transaction's value in the contract."""
 
 # ── limits, all surfaced by get_config ───────────────────────────────────────
 
@@ -500,10 +506,15 @@ class Isobar(gl.contract.Contract):
         begins. Value rides the transaction; a refused stake is returned
         through the ledger, never kept."""
         wei = int(gl.message.value)
-        m = self._market(market_id)
         sender = self._sender()
+        # No raise anywhere below a payable entry: even the unknown-market
+        # case must credit the value back rather than strand it.
+        raw = self.markets.get(market_id)
+        m = json.loads(raw) if raw else None
         refuse = None
-        if side not in ("YES", "NO"):
+        if m is None:
+            refuse = "unknown market"
+        elif side not in ("YES", "NO"):
             refuse = "side must be YES or NO"
         elif self._phase(m, _now()) != "OPEN":
             refuse = "positions close when the observation date begins"
@@ -518,12 +529,17 @@ class Isobar(gl.contract.Contract):
             if sender not in stakers and len(stakers) >= MAX_STAKERS_PER_MARKET:
                 refuse = f"the market holds the {MAX_STAKERS_PER_MARKET} wallets it allows"
         if refuse is not None:
-            # A payable refusal still credits the contract on this platform
-            # (StudioNet, measured 14 Sep) — so return the value explicitly.
+            # A payable refusal must NEVER raise: on this platform the
+            # transaction's value still reaches the contract while a raise
+            # reverts the crediting write — stranding the sender's money
+            # (proven live on this network, walls receipt in the README).
+            # So the refusal is a RETURN: the value is credited back to the
+            # sender's claimable balance and the reason travels in the
+            # result, not in a revert.
             if wei > 0:
                 self._credit(sender, wei)
-            raise gl.vm.UserError(f"{ERROR_EXPECTED} {refuse}; your stake is "
-                                  "claimable back")
+            return json.dumps({"refused": True,
+                               "reason": f"{refuse}; your stake is claimable back"})
         pos = self._position(market_id, sender)
         key = "yes" if side == "YES" else "no"
         pos[key] = int(pos[key]) + wei
@@ -535,7 +551,8 @@ class Isobar(gl.contract.Contract):
         pool_key = "yes_pool_wei" if side == "YES" else "no_pool_wei"
         m[pool_key] = str(int(m[pool_key]) + wei)
         self._save_market(m)
-        return json.dumps({"market_id": market_id, "side": side, "stake_wei": str(wei)})
+        return json.dumps({"refused": False, "market_id": market_id,
+                           "side": side, "stake_wei": str(wei)})
 
     # ── parlay tickets ───────────────────────────────────────────────────────
 
@@ -548,12 +565,21 @@ class Isobar(gl.contract.Contract):
         wei = int(gl.message.value)
         sender = self._sender()
 
+        # Payable refusals return, never raise (see stake): the internal
+        # exception is caught at this boundary, the value credited back,
+        # and the reason travels in the result.
         def refuse(reason: str):
+            raise _PayableRefusal(reason)
+
+        try:
+            return self._buy_ticket_inner(legs_json, wei, sender, refuse)
+        except _PayableRefusal as e:
             if wei > 0:
                 self._credit(sender, wei)
-            raise gl.vm.UserError(f"{ERROR_EXPECTED} {reason}; your stake is "
-                                  "claimable back")
+            return json.dumps({"refused": True,
+                               "reason": f"{e}; your stake is claimable back"})
 
+    def _buy_ticket_inner(self, legs_json: str, wei: int, sender: str, refuse) -> str:
         try:
             legs = json.loads(legs_json)
         except Exception:
@@ -622,7 +648,7 @@ class Isobar(gl.contract.Contract):
                                  MAX_TICKETS_PER_MARKET, "the market's ticket list")
         wallet_ts.append(tid)
         self.wallet_tickets[sender] = json.dumps(wallet_ts)
-        return tid
+        return json.dumps({"refused": False, "ticket_id": tid})
 
     # ── the resolution round ─────────────────────────────────────────────────
 
@@ -1211,11 +1237,12 @@ class Isobar(gl.contract.Contract):
         sender = self._sender()
         wei = int(gl.message.value)
         if sender != self.owner:
+            # Payable refusals return, never raise (see stake).
             if wei > 0:
                 self._credit(sender, wei)
-            raise gl.vm.UserError(f"{ERROR_EXPECTED} only the deployer seeds "
-                                  "the parlay reserve; your value is claimable "
-                                  "back")
+            return json.dumps({"refused": True,
+                               "reason": "only the deployer seeds the parlay "
+                                         "reserve; your value is claimable back"})
         self.reserve_wei["reserve"] = str(
             int(self.reserve_wei.get("reserve") or "0") + wei)
         return self.reserve_wei["reserve"]

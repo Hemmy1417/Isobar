@@ -93,7 +93,8 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
             <input id="stake-amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
             <span className="hint">
               Minimum {formatGen(BigInt(config.min_stake_wei))} GEN. Winners split the losing pool
-              pro-rata; a void market refunds every stake.
+              pro-rata; a void market refunds every stake. A stake the contract declines is
+              credited straight to your claimable balance — never kept.
             </span>
           </div>
           {verb === "stake" && kit && tx && stakeWei ? (

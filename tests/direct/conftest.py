@@ -268,14 +268,45 @@ def module():
     return _load()
 
 
+_TREES = ("markets", "market_list", "positions", "market_stakers",
+          "market_tickets", "rounds", "tickets", "wallet_markets",
+          "wallet_tickets", "ledger", "counters", "reserve_wei")
+
+_PUBLIC_WRITES = ("create_market", "stake", "buy_ticket", "resolve", "appeal",
+                  "finalize", "void_timeout", "settle_ticket", "claim",
+                  "seed_reserve", "withdraw_reserve")
+
+
+def _revert_on_raise(inst, name):
+    """The runtime reverts EVERY state change when a write raises — the
+    platform lesson this harness once hid. Each public write snapshots the
+    trees and restores them if the call escapes with an exception."""
+    fn = getattr(inst, name)
+
+    def wrapped(*args, **kwargs):
+        snapshot = {t: dict(getattr(inst, t)) for t in _TREES}
+        owner = inst.owner
+        try:
+            return fn(*args, **kwargs)
+        except BaseException:
+            for t, data in snapshot.items():
+                tree = getattr(inst, t)
+                tree.clear()
+                tree.update(data)
+            inst.owner = owner
+            raise
+
+    return wrapped
+
+
 def _fresh_instance(module):
     inst = module.Isobar.__new__(module.Isobar)
-    for name in ("markets", "market_list", "positions", "market_stakers",
-                 "market_tickets", "rounds", "tickets", "wallet_markets",
-                 "wallet_tickets", "ledger", "counters", "reserve_wei"):
+    for name in _TREES:
         setattr(inst, name, _TreeMap())
     module.gl.message.sender_address = OWNER
     inst.__init__()
+    for name in _PUBLIC_WRITES:
+        setattr(inst, name, _revert_on_raise(inst, name))
     return inst
 
 
@@ -477,3 +508,13 @@ def resolve_ok(module, c, mid, om_value=5.22, power_value=5.1, sufficient=True,
 
 def claimable(c, addr):
     return int(json.loads(c.get_balance(addr))["claimable"])
+
+
+def buy(c, legs_json, expect_ok=True):
+    """Unwrap buy_ticket's uniform payable result: tid, or the reason."""
+    out = json.loads(c.buy_ticket(legs_json))
+    if expect_ok:
+        assert out["refused"] is False, out
+        return out["ticket_id"]
+    assert out["refused"] is True, out
+    return out["reason"]

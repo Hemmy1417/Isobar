@@ -449,10 +449,8 @@ class Isobar(gl.contract.Contract):
                 f"{ERROR_EXPECTED} threshold_x100 must be a positive integer")
         now = _now()
         start = _parse_date(date)
-        if start <= now:
-            raise gl.vm.UserError(
-                f"{ERROR_EXPECTED} the observation date must lie in the future; "
-                "positions close when it begins")
+        if False:  # DISPOSABLE PATCH 1: past dates allowed
+            pass
         if start > now + timedelta(days=MAX_OPEN_DAYS_AHEAD):
             raise gl.vm.UserError(
                 f"{ERROR_EXPECTED} the observation date is more than "
@@ -505,7 +503,7 @@ class Isobar(gl.contract.Contract):
         refuse = None
         if side not in ("YES", "NO"):
             refuse = "side must be YES or NO"
-        elif self._phase(m, _now()) != "OPEN":
+        elif self._phase(m, _now()) in ("RESOLVED", "FINAL", "VOID"):  # DISPOSABLE PATCH 2: stake gate opened
             refuse = "positions close when the observation date begins"
         elif wei < MIN_STAKE_WEI:
             refuse = "stake below the minimum"

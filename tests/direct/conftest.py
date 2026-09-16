@@ -244,12 +244,22 @@ def _install():
     return gl
 
 
+class _FakeDateTime(datetime):
+    """The runtime wires datetime.now to the transaction datetime; the
+    harness wires it to the test's controlled clock the same way."""
+
+    @classmethod
+    def now(cls, tz=None):
+        return _NOW[0]
+
+
 def _load():
     _install()
     spec = importlib.util.spec_from_file_location("isobar_contract", CONTRACT_PATH)
     m = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m)
     m.print = _print_hook
+    m.datetime = _FakeDateTime
     return m
 
 

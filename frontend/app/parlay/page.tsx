@@ -21,6 +21,7 @@ import { getConfig, getMarkets, getTicket, invalidateReads, listMarketIds, myTic
 import { useWallet } from "../../lib/wallet";
 import type { ConfigView, MarketView, TicketView } from "../../lib/types";
 import { DEMO_PRICING_NOTE, Empty, ErrorNotice, Loading } from "../components/bits";
+import { TestGen } from "../components/TestGen";
 import { TxPanel } from "../components/TxPanel";
 
 type Picked = Record<string, "YES" | "NO">;
@@ -205,6 +206,7 @@ export default function ParlayPage() {
                 The on-chain reserve cannot back this payout right now — a smaller stake fits.
               </p>
             ) : null}
+            <div style={{ marginTop: 10 }}><TestGen /></div>
             <div style={{ marginTop: 10 }}>
               {!address ? (
                 <p className="fine">Connect a wallet from the header to buy the ticket.</p>

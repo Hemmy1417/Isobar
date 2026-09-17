@@ -13,6 +13,7 @@ import { useWallet } from "../../lib/wallet";
 import type { BalanceView, ConfigView, MarketView, PositionView, TicketView } from "../../lib/types";
 import { Empty, ErrorNotice, Loading, PhaseChip } from "../components/bits";
 import { TxPanel } from "../components/TxPanel";
+import { TestGen } from "../components/TestGen";
 import { WalletChoices } from "../components/WalletButton";
 
 interface Row { market: MarketView; position: PositionView }
@@ -104,6 +105,7 @@ export default function MePage() {
                      confirmText={`Claim ${formatGen(claimable)} GEN`} />
           </div>
         ) : null}
+        <div style={{ marginTop: 10 }}><TestGen /></div>
         {balance && Number(balance.claimed) > 0 ? (
           <p className="fine" style={{ marginTop: 8 }}>Already claimed over this wallet&apos;s lifetime: {formatGen(BigInt(balance.claimed))} GEN.</p>
         ) : null}

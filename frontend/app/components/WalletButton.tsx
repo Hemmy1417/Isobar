@@ -2,33 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { RPC_URL, truncAddr } from "../../lib/chain";
+import { truncAddr } from "../../lib/chain";
 import { formatGen } from "../../lib/config";
 import { getBalance } from "../../lib/read";
 import { useWallet, type Discovered } from "../../lib/wallet";
-
-/** The faucet counts in atto: this is 10 GEN, and it credits only the
- *  checksummed address the wallet layer already provides. */
-const TEST_GEN_ATTO = "10000000000000000000";
-
-async function requestTestGen(address: string): Promise<void> {
-  const res = await fetch(
-    RPC_URL,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "sim_fundAccount", params: [address, TEST_GEN_ATTO] }),
-    },
-  );
-  const data = await res.json();
-  if (data.error) throw new Error(String(data.error.message ?? "faucet refused"));
-}
+import { TestGen } from "./TestGen";
 
 export function WalletButton() {
-  const { address, chainOk, connecting, wallets, error, connect, disconnect, switchNetwork } = useWallet();
+  const { address, chainOk, connecting, restoring, wallets, error, connect, disconnect, switchNetwork } = useWallet();
   const [open, setOpen] = useState(false);
   const [claimable, setClaimable] = useState<bigint | null>(null);
-  const [funding, setFunding] = useState<"idle" | "busy" | "done" | "failed">("idle");
   const boxRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -63,15 +46,7 @@ export function WalletButton() {
             <p className="fine">
               {claimable === null ? "Reading your claimable balance…" : `${formatGen(claimable)} GEN claimable in the contract`}
             </p>
-            <button className="btn btn-ghost" disabled={funding === "busy"} onClick={async () => {
-              setFunding("busy");
-              try { await requestTestGen(address); setFunding("done"); } catch { setFunding("failed"); }
-            }}>
-              {funding === "busy" ? "Requesting test GEN…"
-                : funding === "done" ? "Test GEN sent — request more"
-                : funding === "failed" ? "Faucet did not answer — try again"
-                : "Get test GEN"}
-            </button>
+            <TestGen compact />
             <button className="btn btn-quiet" onClick={() => { void navigator.clipboard?.writeText(address); setOpen(false); }}>
               Copy address
             </button>
@@ -85,7 +60,7 @@ export function WalletButton() {
   return (
     <div style={{ position: "relative" }} ref={boxRef}>
       <button type="button" className="btn btn-primary" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        {connecting ? "Connecting…" : "Connect wallet"}
+        {restoring ? "Reconnecting…" : connecting ? "Connecting…" : "Connect wallet"}
       </button>
       {open ? (
         <div className="card" style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", width: 250, zIndex: 60 }}>

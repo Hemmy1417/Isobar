@@ -16,6 +16,7 @@ import { useTransactionKit } from "../../../lib/kit";
 import { useWallet } from "../../../lib/wallet";
 import type { ConfigView, MarketView, PositionView, TicketView } from "../../../lib/types";
 import { ActBlocked } from "../../components/bits";
+import { TestGen } from "../../components/TestGen";
 import { TxPanel } from "../../components/TxPanel";
 
 type Verb = "stake" | "resolve" | "appeal" | "finalize" | "void_timeout";
@@ -97,6 +98,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
               credited straight to your claimable balance — never kept.
             </span>
           </div>
+          <div style={{ marginBottom: 8 }}><TestGen /></div>
           {verb === "stake" && kit && tx && stakeWei ? (
             <TxPanel kit={kit} tx={tx} value={stakeWei} onDone={done}
                      confirmText={`Stake ${amount} GEN on ${side === "YES" ? "Yes" : "No"}`} />

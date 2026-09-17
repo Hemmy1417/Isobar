@@ -17,6 +17,7 @@ import { useWallet } from "../../../lib/wallet";
 import type { ConfigView } from "../../../lib/types";
 import { ErrorNotice, Loading } from "../../components/bits";
 import { TxPanel } from "../../components/TxPanel";
+import { TestGen } from "../../components/TestGen";
 import { WalletChoices } from "../../components/WalletButton";
 
 const THRESHOLD_HINTS: Record<string, string> = {
@@ -167,6 +168,7 @@ export default function NewMarketPage() {
           </div>
         )}
         {address && !chainOk ? <p className="fine" style={{ marginTop: 8 }}>Your wallet is on another network — switch from the header.</p> : null}
+        {address ? <div style={{ marginTop: 10 }}><TestGen /></div> : null}
       </div>
     </div>
   );

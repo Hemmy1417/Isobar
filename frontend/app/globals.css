@@ -102,6 +102,9 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   .nav::-webkit-scrollbar { display: none; }
 }
 
+.testgen { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+.testgen-low { padding: 8px 10px; border: 1px solid var(--accent); border-radius: 5px; }
+
 /* ── cards & panels ── */
 .card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 18px 20px; }
 .card-dashed { background: transparent; border: 1px dashed var(--line); border-radius: var(--radius); padding: 18px 20px; }

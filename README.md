@@ -248,7 +248,7 @@ redeploy. CI allows exactly that finding and fails on any other.
 
 - Verdicts are **daily UTC thresholds** — not minute-level claims, not
   causation ("this storm delayed that ship" is a later milestone with a
-  different evidence bar).
+  different evidence bar — see the v2 roadmap below).
 - Reanalysis datasets genuinely disagree sometimes; the split rule **voids
   instead of guessing**, and single-source days never settle.
 - Parlay multipliers are **flat demo pricing**, not market odds, labeled on
@@ -259,6 +259,53 @@ redeploy. CI allows exactly that finding and fails on any other.
   it matters.
 - Test GEN on Studio Next. A working mechanism, not a licensed financial
   product.
+
+## Roadmap — v2
+
+v1 settles numbers. v2 leans into what only GenLayer can do: judge messy
+real-world facts, not just thresholds. It is a new deployment, so contract
+changes land together (including the one documented lint finding).
+
+### The headline: event markets
+
+A market can ask whether something **happened**, not only what a number
+read:
+
+> *Did the Port of Rotterdam suspend vessel traffic on 3 Oct?*
+> *Did the Panama Canal Authority restrict transits this week?*
+
+Validators read the official notices of port authorities, canal authorities
+and coast guards from a catalog of sources, and must agree on what the
+record says, under the same rules v1 enforces today: nobody supplies a URL,
+evidence is corroborated where it enters the record, the panel's findings
+are grounded in quotes from the fetched text, code derives the verdict, and
+an appeal re-reads the record instead of refetching it. This is the question
+logistics actually asks — *was my port closed?* — and no price-feed oracle
+can answer it.
+
+### Planned
+
+| feature | what it changes | why |
+|---|---|---|
+| **Event markets** | Yes/No questions settled from official port, canal and coast-guard notices, consensus over the recorded notice text | The question shippers actually ask; the clearest case for decentralized judgment |
+| **Pool-implied parlay pricing** | Each leg priced from its live Yes/No pools at purchase, with a margin and a cap; full payout still reserved on chain at purchase | Retires v1's flat demo multipliers — the parlay becomes a real product |
+| **Isobar Cover** | Parametric protection: a shipper pays a premium and is paid if the threshold is crossed on their date; underwriters commit capacity reserved per policy at sale | Hedging for real businesses on the same verdict engine; capacity is per policy, never one pooled pot |
+| **Resolver rewards** | A small share of the pool pays the wallet that triggers a successful resolution or finalize; retries pay nothing | Markets settle on time with no backend and no keeper service |
+| **Third source, 2-of-3 agreement** | METAR airport reports for ports near an airport, Open-Meteo Marine for wave height; two agreeing sources settle | Far fewer voids, and new metrics: wave height, visibility, multi-day windows |
+
+### Also on the list
+
+- **Base rates on every market** — how often the threshold was crossed at
+  that station on recent days, computed in the browser from public
+  archives, so positions are priced from evidence.
+- **Appeal bonds and a longer window** — the appellant posts a bond that is
+  refunded when the appeal changes the outcome; the window grows from v1's
+  demo-sized 60 minutes to 24 hours.
+- **Verdicts other contracts can read** — e.g. a shipping escrow whose
+  force-majeure clause checks an Isobar verdict, making Isobar
+  infrastructure rather than only an app.
+- **Community-proposed locations** — anyone proposes a port; validators
+  confirm the coordinates are a real port before it joins the catalog.
 
 ## The docs
 

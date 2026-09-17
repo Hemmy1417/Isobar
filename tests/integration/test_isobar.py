@@ -8,7 +8,7 @@ claim whose fees carry the simulation's message allocations.
 Resolution needs the real weather calendar (days of source lag) and is
 proven on the deployment of record instead: `node frontend/scripts/live-record.mjs`.
 
-Run:           gltest tests/integration -v -s
+Run:           gltest tests/integration --network studio_devnet -v -s
 Fee profile:   npm run test:fees   (writes frontend/fee-profile.json, chainId 61997)
 Needs:         ISOBAR_TEST_PRIVATE_KEY in .env — a funded Studio Next key.
 """

@@ -11,10 +11,12 @@ SSLEOFError, "bad record mac") fails a whole test. Retry only what is safe:
 
 Read timeouts are NOT retried: the request may have been accepted.
 """
+import os
 import time
 
 import pytest
 import requests
+from dotenv import load_dotenv
 from genlayer_py.exceptions import GenLayerError
 from genlayer_py.provider import provider as _provider
 
@@ -39,7 +41,27 @@ def _retrying(make_request):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def resilient_transport():
+def funded_account():
+    """Inject the funded Studio Next key for the selected network; skip the
+    suite cleanly when none is configured (e.g. CI, a fresh clone)."""
+    from gltest_cli.config.general import get_general_config
+
+    load_dotenv(".env")
+    key = os.environ.get("ISOBAR_TEST_PRIVATE_KEY")
+    config = get_general_config()
+    network = config.get_network_name()
+    if network == "localnet":
+        pytest.skip("integration runs on Studio Next: gltest tests/integration --network studio_devnet")
+    if not key:
+        pytest.skip("set ISOBAR_TEST_PRIVATE_KEY (a funded Studio Next key) in .env")
+    net = config.user_config.networks[network]
+    net.accounts = [key]
+    net.from_account = key
+    yield
+
+
+@pytest.fixture(scope="session", autouse=True)
+def resilient_transport(funded_account):
     original = _provider.GenLayerProvider.make_request
     _provider.GenLayerProvider.make_request = _retrying(original)
     yield

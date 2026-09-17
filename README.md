@@ -204,7 +204,7 @@ npm run lint && npm test && npm run build
 
 # 5. Integration tests on Studio Next (deploys a throwaway instance)
 echo "ISOBAR_TEST_PRIVATE_KEY=0x…" >> .env      # a funded Studio Next key, gitignored
-gltest tests/integration/ -v -s
+gltest tests/integration/ --network studio_devnet -v -s
 npm run test:fees            # same run, measuring frontend/fee-profile.json (chainId 61997)
 
 # 6. Deploy your own instance
@@ -225,7 +225,7 @@ No environment variables are required; `frontend/.env.example` lists the optiona
 | **Direct, official runner** | `pytest tests/direct/test_sdk_runner.py` | the same mechanism on the real SDK (`direct_vm`): YES round, validator agree / disagree, forged leader refused, void refunds, retry, payable refusal credited, claim, checksummed-signer keys | 8 |
 | **Mutation sweep** | `python tests/mutation/mutate.py` | every safety floor broken in place is caught; restore-control passes | 14/14 killed |
 | **Frontend** | `npm test` | acts availability at every boundary, vocabulary, read budget, refusal decoding, kit wiring + payout allocations, network config, pinned releases, checksummed accounts, transaction panel finality, deploy script | 62 |
-| **Integration** | `gltest tests/integration/` | on Studio Next: deploy, catalog, market + stake, refusal walls, refused payable credited back, real-GEN claim with message allocations | 4 |
+| **Integration** | `gltest tests/integration/ --network studio_devnet` | on Studio Next: deploy, catalog, market + stake, refusal walls, refused payable credited back, real-GEN claim with message allocations | 4 |
 | **Live proofs** | `node frontend/scripts/live-record.mjs` | the tables above, on the deployment of record and the disposable | scripted assertions |
 
 **Fee profile — measured, and deliberately not wired.** `npm run test:fees` measures a

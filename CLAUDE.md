@@ -13,7 +13,7 @@ genvm-lint check contracts/isobar.py
 
 # Testing
 pytest tests/direct/ -v                        # Direct mode: stub harness + official runner (fast, no network)
-gltest tests/integration/ -v -s                # Integration on Studio Next (deploys a throwaway instance)
+gltest tests/integration/ --network studio_devnet -v -s                # Integration on Studio Next (deploys a throwaway instance)
 npm run test:fees                              # Same, measuring frontend/fee-profile.json (chainId 61997)
 
 # Frontend (npm workspace)

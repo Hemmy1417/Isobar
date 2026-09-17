@@ -22,6 +22,17 @@ export const PROVING_GROUND = "0xFF60C795c1e449e7DA99dd1b7726e064ba426CE2";
 /** Where the live markets are, for pages served from any other deployment. */
 export const LIVE_APP_URL = "https://iso-bar.vercel.app";
 
+/** The same frontend built against PROVING_GROUND, so finished rounds are browsable. */
+export const PROVING_GROUND_APP_URL = "https://isobar-frontend-i1kv.vercel.app";
+
+/** The proving ground's resolved markets, each named by what its record shows. */
+export const PROVING_GROUND_EXAMPLES = [
+  { id: "mk-000002", text: "the sources disagreed, so it voided" },
+  { id: "mk-000001", text: "Yes, upheld on appeal" },
+  { id: "mk-000004", text: "No" },
+  { id: "mk-000003", text: "NASA POWER had no value yet, so the round retried" },
+] as const;
+
 export type DeploymentKind = "record" | "proving-ground" | "other";
 
 export function deploymentKind(address: string): DeploymentKind {
@@ -30,6 +41,9 @@ export function deploymentKind(address: string): DeploymentKind {
   if (a === PROVING_GROUND.toLowerCase()) return "proving-ground";
   return "other";
 }
+
+/** Which deployment this build reads, fixed at build time. */
+export const DEPLOYMENT_KIND = deploymentKind(CONTRACT_ADDRESS);
 
 export const APP_NAME = "Isobar";
 

@@ -8,8 +8,10 @@
 import { useState } from "react";
 
 import { txUrl } from "../../../lib/chain";
+import { DEPLOYMENT_KIND, PROVING_GROUND_APP_URL } from "../../../lib/config";
 import { formatDateTime, readingText, sentence, sourceName, verdictLabel } from "../../../lib/present";
 import type { MarketView, RoundView } from "../../../lib/types";
+import { ProvingGroundLink } from "../../components/ProvingGround";
 
 export function EvidencePanel({ market: m, rounds }: { market: MarketView; rounds: RoundView[] }) {
   const [showRaw, setShowRaw] = useState(false);
@@ -20,8 +22,18 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
         <p className="muted small" style={{ marginTop: 8 }}>
           No round has run yet. When one does, every validator fetches both sources itself,
           and what they agreed on is recorded here: readings, data-quality findings and the
-          quotes that back them.
+          quotes they cite.
         </p>
+        {DEPLOYMENT_KIND === "record" ? (
+          <p className="fine" style={{ marginTop: 8 }}>
+            Finished rounds on real recorded weather are on the{" "}
+            <ProvingGroundLink>proving ground</ProvingGroundLink>, including{" "}
+            <a href={`${PROVING_GROUND_APP_URL}/markets/mk-000002`} target="_blank" rel="noreferrer">
+              a market that voided
+            </a>{" "}
+            when the two sources disagreed.
+          </p>
+        ) : null}
       </div>
     );
   }

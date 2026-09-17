@@ -5,17 +5,8 @@
  * record, so the proving ground's resolved markets are never mistaken for
  * the live ones. The record itself shows nothing.
  */
-import Link from "next/link";
-
 import { LIVE_APP_URL, type DeploymentKind } from "../../lib/config";
-import { marketNumber } from "../../lib/present";
-
-const EXAMPLES = [
-  { id: "mk-000002", text: "the sources disagreed, so it voided" },
-  { id: "mk-000001", text: "Yes, upheld on appeal" },
-  { id: "mk-000004", text: "No" },
-  { id: "mk-000003", text: "NASA POWER had no value yet, so the round retried" },
-];
+import { ProvingGroundExamples } from "./ProvingGround";
 
 const liveHost = LIVE_APP_URL.replace(/^https?:\/\//, "");
 
@@ -40,12 +31,7 @@ export function DeploymentBanner({ kind }: { kind: DeploymentKind }) {
         Colón, Panama. Resolution and appeal work exactly as on the live markets at {live}.
       </p>
       <p style={{ marginTop: 6 }}>
-        {EXAMPLES.map((e, i) => (
-          <span key={e.id}>
-            {i > 0 ? " · " : ""}
-            <Link href={`/markets/${e.id}`}>{marketNumber(e.id)}</Link>: {e.text}
-          </span>
-        ))}
+        <ProvingGroundExamples external={false} />
       </p>
     </div>
   );

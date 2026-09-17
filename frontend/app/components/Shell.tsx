@@ -3,12 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { CONTRACT_ADDRESS, deploymentKind } from "../../lib/config";
+import { DEPLOYMENT_KIND } from "../../lib/config";
 import { WalletProvider } from "../../lib/wallet";
 import { DeploymentBanner } from "./DeploymentBanner";
 import { WalletButton } from "./WalletButton";
-
-const DEPLOYMENT = deploymentKind(CONTRACT_ADDRESS);
 
 const NAV = [
   { href: "/markets", label: "Markets" },
@@ -46,7 +44,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="wrap section">
-        <DeploymentBanner kind={DEPLOYMENT} />
+        <DeploymentBanner kind={DEPLOYMENT_KIND} />
         {children}
       </main>
       <footer className="wrap" style={{ paddingBlock: "26px 40px", borderTop: "1px solid var(--line-soft)" }}>

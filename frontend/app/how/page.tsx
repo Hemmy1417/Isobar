@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { addressUrl, EXPLORER } from "../../lib/chain";
-import { CONTRACT_ADDRESS, CONTRACT_CONFIGURED } from "../../lib/config";
+import { CONTRACT_ADDRESS, CONTRACT_CONFIGURED, DEPLOYMENT_KIND } from "../../lib/config";
+import { ProvingGroundExamples, ProvingGroundLink } from "../components/ProvingGround";
 
 export const metadata = { title: "How Isobar works" };
 
@@ -18,6 +19,18 @@ export default function HowPage() {
           ) : null}.
         </p>
       </div>
+
+      {DEPLOYMENT_KIND === "record" ? (
+        <div className="notice notice-info">
+          <p>
+            <b>See it on real data.</b> The{" "}
+            <ProvingGroundLink>proving ground</ProvingGroundLink> is a test copy of this contract
+            with its date checks opened, so its markets resolved against the real recorded
+            weather at Colón, Panama:
+          </p>
+          <p style={{ marginTop: 6 }}><ProvingGroundExamples external /></p>
+        </div>
+      ) : null}
 
       <section className="card">
         <h3>1 · A market is one falsifiable question</h3>
@@ -129,8 +142,10 @@ export default function HowPage() {
         <p className="small muted" style={{ marginTop: 8 }}>
           Honest limits: verdicts are daily-resolution UTC thresholds, not minute-level
           claims; reanalysis sources genuinely disagree sometimes, which is why the split
-          rule voids instead of guessing; and this deployment runs on test GEN. It is a
-          working mechanism, not a licensed financial product.
+          rule voids instead of guessing; NASA POWER is currently read on its local solar
+          day rather than the UTC day, which can matter close to a threshold; and this
+          deployment runs on test GEN. It is a working mechanism, not a licensed financial
+          product.
         </p>
       </section>
 

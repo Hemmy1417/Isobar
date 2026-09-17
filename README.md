@@ -21,6 +21,8 @@ full payout is reserved on-chain the moment it is bought.
 
 | | |
 |---|---|
+| Live app | [iso-bar.vercel.app](https://iso-bar.vercel.app) |
+| Demo video | [youtu.be/qm7L5LDLtZE](https://youtu.be/qm7L5LDLtZE) (2:59) |
 | Contract | [`0x169cE1cD5aAa013adee55a4B3ed86752cc999375`](https://explorer-studio-dev.genlayer.com/address/0x169cE1cD5aAa013adee55a4B3ed86752cc999375) |
 | Network | GenLayer Studio Next (chain 61997) |
 | Deploy tx | `0x172624caa71e7b5470eda8094a0fb5b52b74ed985ec7bd55682e597f9eb9e67c` |
@@ -144,7 +146,10 @@ The deployment of record runs
 the pristine rules on future-dated markets. Its book was seeded on 16 Sep
 with a certain-YES control (Panama ≥ 5 °C), a certain-NO control (Rotterdam
 wind ≥ 60 m/s) and open questions across the catalog, resolving on their
-honest lags over the following days.
+honest lags over the following days. Two more markets opened on 17 Sep keep
+the book open through review: market #9 (Panama Canal wind, 24 Sep) and
+market #10 (Port of Hamburg wind, 1 Oct), the ones the demo stakes on and
+chains into a parlay.
 
 ### Walls on the deployment of record (17 Sep 2026)
 
@@ -177,6 +182,21 @@ standard-library `datetime.now` *is* the tx datetime on this runner, and
 Built on the [GenLayer project boilerplate (v2-dev)](https://github.com/genlayerlabs/genlayer-project-boilerplate/tree/v2-dev):
 same layout (`contracts/`, `tests/direct`, `tests/integration`, `frontend/`, `deploy/`),
 same toolchain pins, same CI jobs.
+
+### Try it in the app
+
+1. **Connect a wallet.** Open [iso-bar.vercel.app](https://iso-bar.vercel.app) and click Connect
+   wallet; approve the network request in MetaMask. The app keeps you connected after a refresh.
+2. **Get test GEN.** On any market that is open for positions, click Get 10 test GEN.
+3. **Open a market.** Markets → Open a market: a location, a metric, a threshold and a date
+   within the next three weeks. The new market opens for positions right away.
+4. **Take a position.** Pick Yes or No, enter a small stake, review the fee quote and sign;
+   the position appears in the pool once the transaction finalizes.
+5. **Build a parlay.** Pick a side on two to four open markets and buy; the full payout is
+   reserved on chain at purchase (flat demo pricing, labeled).
+6. **Check your positions.** My positions lists every market and ticket the wallet holds.
+7. **See how verdicts are reached.** How it works, plus the proving-ground table above for
+   resolved markets: a Yes with an upheld appeal, and a void when the sources disagreed.
 
 ### Requirements
 
@@ -224,7 +244,7 @@ No environment variables are required; `frontend/.env.example` lists the optiona
 | **Direct, stub harness** | `pytest tests/direct/` | lifecycle, consensus refusals (forged snapshots, self-digests, empty excerpts, split readings), appeal, parlay, walls, wei conservation with dust; every validator runs on every call | 55 |
 | **Direct, official runner** | `pytest tests/direct/test_sdk_runner.py` | the same mechanism on the real SDK (`direct_vm`): YES round, validator agree / disagree, forged leader refused, void refunds, retry, payable refusal credited, claim, checksummed-signer keys | 8 |
 | **Mutation sweep** | `python tests/mutation/mutate.py` | every safety floor broken in place is caught; restore-control passes | 14/14 killed |
-| **Frontend** | `npm test` | acts availability at every boundary, vocabulary, read budget, refusal decoding, kit wiring + payout allocations, network config, pinned releases, checksummed accounts, transaction panel finality, deploy script | 62 |
+| **Frontend** | `npm test` | acts availability at every boundary, vocabulary, read budget, refusal decoding, kit wiring + payout allocations, network config, pinned releases, checksummed accounts, transaction panel finality, deploy script, wallet session restore, faucet, read concurrency | 73 |
 | **Integration** | `gltest tests/integration/ --network studio_devnet` | on Studio Next: deploy, catalog, market + stake, refusal walls, refused payable credited back, real-GEN claim with message allocations | 4 |
 | **Live proofs** | `node frontend/scripts/live-record.mjs` | the tables above, on the deployment of record and the disposable | scripted assertions |
 

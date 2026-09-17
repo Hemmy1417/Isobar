@@ -56,7 +56,7 @@ export default function MapPage() {
         <div>
           <h1 style={{ fontSize: 30 }}>The map</h1>
           <p className="muted small" style={{ marginTop: 4 }}>
-            Sixteen strategic stations — canals, straits, ports. Click one to see its markets.
+            Sixteen strategic stations: canals, straits, ports. Click one to see its markets.
           </p>
         </div>
         <div className="row" style={{ flexWrap: "wrap", gap: 10 }}>
@@ -82,7 +82,7 @@ export default function MapPage() {
             <Link className="btn btn-ghost" href="/markets/new">Open a market here</Link>
           </div>
           {here.length === 0 ? (
-            <p className="muted small">No markets at this station yet{loaded ? "" : " (still reading)"} — it is waiting for its first question.</p>
+            <p className="muted small">No markets at this station yet{loaded ? "" : " (still reading)"}. It is waiting for its first question.</p>
           ) : (
             <div className="grid-2">
               {here.map((m) => <MarketCard key={m.market_id} market={m} config={config} />)}
@@ -91,7 +91,7 @@ export default function MapPage() {
         </div>
       ) : (
         <p className="fine">
-          Dots pulse where a verdict is near. A station with no color has no market yet —
+          Dots pulse where a verdict is near. A station with no color has no market yet;
           the catalog covers it the moment someone opens one.
         </p>
       )}

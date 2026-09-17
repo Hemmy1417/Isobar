@@ -8,13 +8,13 @@ one appeal re-reads the agreed record before any money moves.</p>
 
 ---
 
-**the product in one breath** — a market asks one falsifiable question: did a
+**the product in one breath:** a market asks one falsifiable question: did a
 daily weather metric at a fixed coordinate cross a fixed threshold on a fixed
-UTC date? Stake GEN on yes or no at sixteen strategic logistics stations —
+UTC date? Stake GEN on yes or no at sixteen strategic logistics stations:
 canals, straits, ports. When the day has passed, any wallet triggers a
 resolution round: every validator fetches both evidence sources, the panel
-agrees on the recorded readings line by line, and contract code — never a
-model — turns them into the verdict. Chain markets into a parlay ticket whose
+agrees on the recorded readings line by line, and contract code (never a
+model) turns them into the verdict. Chain markets into a parlay ticket whose
 full payout is reserved on-chain the moment it is bought.
 
 ## The deployment of record
@@ -33,7 +33,7 @@ below): `0x316BFc2d…70F1`, `0x0E9B0566…E90c` (throwaway fetch/clock probes),
 `0x8E837328…cc11`, `0x2b57BDCB…E3a2`, `0xFF60C795…6CE2` (patched disposables
 for same-day end-to-end runs); `0x85328a61…27b5` (rules-1 record, superseded
 by rules-2's fix: a payable refusal now RETURNS the value to the claim ledger
-instead of reverting — on this platform a revert strands the transaction's
+instead of reverting, because on this platform a revert strands the transaction's
 value, so the walls receipt below became a fix).
 
 ## Why GenLayer is load-bearing
@@ -42,12 +42,12 @@ Weather "truth" is plural. Two reputable datasets disagree at the margin,
 stations go dark mid-window, agencies revise readings. A price-feed oracle
 cannot adjudicate that; a centralized backend must be trusted not to. Here
 the money question is answered *inside consensus*: validators each fetch two
-independent public data sources — different organizations, different data
-lineages — agree on the recorded evidence row by row, and judge the messy
+independent public data sources (different organizations, different data
+lineages), agree on the recorded evidence row by row, and judge the messy
 parts (does this payload truly cover the date? is it trustworthy enough to
 settle on?) with quotes that must appear in the fetched bytes. The payout
 math reads only agreed, validated values. When the sources split, **nobody
-settles**: the market voids and every stake is refunded — in either
+settles**: the market voids and every stake is refunded, in either
 direction, because honesty about disagreement beats a guess.
 
 ## What the contract owns, and what it refuses to
@@ -64,12 +64,12 @@ direction, because honesty about disagreement beats a guess.
   normalized payload by prefix, digests that must cover exactly the stored
   bytes, a fetched row with an empty excerpt refused outright. A leader
   cannot store a page no other node ever saw.
-- **The panel never touches money.** It judges data quality only — it is
-  never told the threshold, the sides, or the pools — and each judgment
+- **The panel never touches money.** It judges data quality only (it is
+  never told the threshold, the sides, or the pools), and each judgment
   needs a verbatim quote from the payload it judges. Insufficient data
   blocks *both* verdicts.
 - **One appeal, against the record.** A wallet with money at stake may force
-  one fresh round that re-reads the recorded snapshot — zero refetches, so
+  one fresh round that re-reads the recorded snapshot with zero refetches, so
   the appellant argues against the same bytes the first panel saw. It can
   uphold or void; it cannot invent an outcome. Settlement never front-runs
   the window.
@@ -77,7 +77,7 @@ direction, because honesty about disagreement beats a guess.
   can never reach a verdict voids on a timeout anyone can trigger; claims
   are pull-payment and idempotent; a refused payable write credits its value
   straight back to the sender's claimable balance.
-- **The parlay reserves at purchase.** Tickets (2–4 legs, flat multipliers
+- **The parlay reserves at purchase.** Tickets (2 to 4 legs, flat multipliers
   **labeled demo pricing on every surface**) reserve their full payout from
   a deployer-seeded on-chain reserve at buy time or are refused in words. A
   voided leg drops out of the multiplier; a ticket of voids refunds.
@@ -101,11 +101,11 @@ open ──(window date begins)── observing ──(sources cover: +2d fast /
   pools settle pro-rata → pull ledger → claim()          unresolved forever → void_timeout()
 ```
 
-## Live, on chain — the disposable proving ground (16 Sep 2026)
+## Live, on chain: the disposable proving ground (16 Sep 2026)
 
 The mechanism was proven same-day on a **disposable variant** of the real
 contract with four printed patches (past dates allowed; stake, ticket and
-resolve-lag gates opened — nothing else), so resolution could run against
+resolve-lag gates opened, nothing else), so resolution could run against
 the real recorded weather of **11 Sep 2026 at Colón**, where the two
 reanalyses genuinely disagree: Open-Meteo 5.22 m/s, NASA POWER 3.84 m/s.
 Contract `0xFF60C795…6CE2`; every transaction FINALIZED under
@@ -132,8 +132,8 @@ Contract `0xFF60C795…6CE2`; every transaction FINALIZED under
 **A claim needs the fee simulation's message allocations.** The first claim
 attempt was sent with a plain fee estimate and finalized with the leader
 refusing `fee no_matching_allocation # external`
-(`0x24cd035aa6e4cbf7589b2be93ede586130f23ef0b2061cd88d0c903a2f569719`) —
-consensus agreed the write failed, the ledger stayed intact, nothing was
+(`0x24cd035aa6e4cbf7589b2be93ede586130f23ef0b2061cd88d0c903a2f569719`).
+Consensus agreed the write failed, the ledger stayed intact, nothing was
 lost. Transaction Kit 0.1.0-rc.2 prices from defaults and submits without
 allocations, so the app wraps it: `claim` is priced by
 `estimateTransactionFeesForWrite` and signed with the allocations it
@@ -141,7 +141,7 @@ measured, every other write goes through the kit unchanged
 ([`frontend/lib/kit.ts`](frontend/lib/kit.ts), tested in `frontend/tests/kit.test.ts`).
 
 The deployment of record runs
-the pristine rules on future-dated markets — its book was seeded on 16 Sep
+the pristine rules on future-dated markets. Its book was seeded on 16 Sep
 with a certain-YES control (Panama ≥ 5 °C), a certain-NO control (Rotterdam
 wind ≥ 60 m/s) and open questions across the catalog, resolving on their
 honest lags over the following days.
@@ -168,7 +168,7 @@ from the browser (Open-Meteo carries yesterday; NASA POWER trails ~3 days,
 `-999` fill parsed as *not covered*, never a reading; NWS is minutes old,
 km/h converted in code); the boilerplate's newer runner rejected by Studio
 Next; all three APIs fetched and parsed inside a consensus round (NWS's
-620 KB day of observations included); and the transaction clock — the
+620 KB day of observations included); and the transaction clock: the
 standard-library `datetime.now` *is* the tx datetime on this runner, and
 `gl.message_raw` is gone.
 
@@ -187,7 +187,7 @@ same toolchain pins, same CI jobs.
 ### Quick start
 
 ```shell
-# 1. Python toolchain (genlayer-py, genlayer-test, genvm-linter — the boilerplate pins)
+# 1. Python toolchain (genlayer-py, genlayer-test, genvm-linter: the boilerplate pins)
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
@@ -214,21 +214,21 @@ node frontend/scripts/deploy.mjs verify 0x…     # byte-for-byte against contra
 
 **Deploying the frontend on Vercel**: import the repo, set **Root Directory** to `frontend`.
 No environment variables are required; `frontend/.env.example` lists the optional overrides
-(network and contract address — the wallet, genlayer-js and Transaction Kit share one network config).
+(network and contract address; the wallet, genlayer-js and Transaction Kit share one network config).
 
 ### Testing strategy
 
 | layer | command | what it proves | count |
 |---|---|---|---|
-| **Lint** | `genvm-lint check contracts/isobar.py` | SDK validation passes (23 methods); lint clean apart from one documented finding (below) | — |
-| **Direct, stub harness** | `pytest tests/direct/` | lifecycle, consensus refusals (forged snapshots, self-digests, empty excerpts, split readings), appeal, parlay, walls, wei conservation with dust — every validator runs on every call | 55 |
+| **Lint** | `genvm-lint check contracts/isobar.py` | SDK validation passes (23 methods); lint clean apart from one documented finding (below) | n/a |
+| **Direct, stub harness** | `pytest tests/direct/` | lifecycle, consensus refusals (forged snapshots, self-digests, empty excerpts, split readings), appeal, parlay, walls, wei conservation with dust; every validator runs on every call | 55 |
 | **Direct, official runner** | `pytest tests/direct/test_sdk_runner.py` | the same mechanism on the real SDK (`direct_vm`): YES round, validator agree / disagree, forged leader refused, void refunds, retry, payable refusal credited, claim, checksummed-signer keys | 8 |
 | **Mutation sweep** | `python tests/mutation/mutate.py` | every safety floor broken in place is caught; restore-control passes | 14/14 killed |
 | **Frontend** | `npm test` | acts availability at every boundary, vocabulary, read budget, refusal decoding, kit wiring + payout allocations, network config, pinned releases, checksummed accounts, transaction panel finality, deploy script | 62 |
 | **Integration** | `gltest tests/integration/ --network studio_devnet` | on Studio Next: deploy, catalog, market + stake, refusal walls, refused payable credited back, real-GEN claim with message allocations | 4 |
 | **Live proofs** | `node frontend/scripts/live-record.mjs` | the tables above, on the deployment of record and the disposable | scripted assertions |
 
-**Fee profile — measured, and deliberately not wired.** `npm run test:fees` measures a
+**Fee profile: measured, and deliberately not wired.** `npm run test:fees` measures a
 gltest profile on Studio Next (chainId 61997). Priced exactly the way Transaction Kit applies
 a developer profile, those allocations **failed live**: `create_market` and `stake` both
 finalized with the leader refusing `out_of receipt message`
@@ -236,31 +236,31 @@ finalized with the leader refusing `out_of receipt message`
 `0xc2035db18df5a67e90df79018f226c4e436cc3e740e05a16181529dcfee2a53a`, on the disposable).
 The measured budgets cover execution but underfund receipts. The app therefore passes a profile
 that names chain 61997 with no method entries, so the kit sizes every write from live network
-defaults — the path every in-app and scripted write on this deployment has used. `claim` is
+defaults, the path every in-app and scripted write on this deployment has used. `claim` is
 additionally priced by simulation for its message allocations.
 
-**The one lint finding.** `genvm-lint check` (v0.11-dev) reports E022 — "method must have
-`self`" — on the `@staticmethod` helper `_snapshot_agrees`. It is valid Python that already runs
+**The one lint finding.** `genvm-lint check` (v0.11-dev) reports E022 ("method must have
+`self`") on the `@staticmethod` helper `_snapshot_agrees`. It is valid Python that already runs
 inside live consensus rounds; changing it would change the byte-verified contract and require a
 redeploy. CI allows exactly that finding and fails on any other.
 
 ## Honest limits
 
-- Verdicts are **daily UTC thresholds** — not minute-level claims, not
+- Verdicts are **daily UTC thresholds**, not minute-level claims and not
   causation ("this storm delayed that ship" is a later milestone with a
-  different evidence bar — see the v2 roadmap below).
+  different evidence bar; see the v2 roadmap below).
 - Reanalysis datasets genuinely disagree sometimes; the split rule **voids
   instead of guessing**, and single-source days never settle.
 - Parlay multipliers are **flat demo pricing**, not market odds, labeled on
   every surface; the reserve is deployer-seeded protocol capital, disclosed,
   taking no third-party deposits.
-- The appeal window is 60 minutes on this deployment — long enough to
+- The appeal window is 60 minutes on this deployment: long enough to
   dispute, short enough to demo; it is a config constant, stated everywhere
   it matters.
 - Test GEN on Studio Next. A working mechanism, not a licensed financial
   product.
 
-## Roadmap — v2
+## Roadmap: v2
 
 v1 settles numbers. v2 leans into what only GenLayer can do: judge messy
 real-world facts, not just thresholds. It is a new deployment, so contract
@@ -280,7 +280,7 @@ record says, under the same rules v1 enforces today: nobody supplies a URL,
 evidence is corroborated where it enters the record, the panel's findings
 are grounded in quotes from the fetched text, code derives the verdict, and
 an appeal re-reads the record instead of refetching it. This is the question
-logistics actually asks — *was my port closed?* — and no price-feed oracle
+logistics actually asks (*was my port closed?*), and no price-feed oracle
 can answer it.
 
 ### Planned
@@ -288,27 +288,27 @@ can answer it.
 | feature | what it changes | why |
 |---|---|---|
 | **Event markets** | Yes/No questions settled from official port, canal and coast-guard notices, consensus over the recorded notice text | The question shippers actually ask; the clearest case for decentralized judgment |
-| **Pool-implied parlay pricing** | Each leg priced from its live Yes/No pools at purchase, with a margin and a cap; full payout still reserved on chain at purchase | Retires v1's flat demo multipliers — the parlay becomes a real product |
+| **Pool-implied parlay pricing** | Each leg priced from its live Yes/No pools at purchase, with a margin and a cap; full payout still reserved on chain at purchase | Retires v1's flat demo multipliers, so the parlay becomes a real product |
 | **Isobar Cover** | Parametric protection: a shipper pays a premium and is paid if the threshold is crossed on their date; underwriters commit capacity reserved per policy at sale | Hedging for real businesses on the same verdict engine; capacity is per policy, never one pooled pot |
 | **Resolver rewards** | A small share of the pool pays the wallet that triggers a successful resolution or finalize; retries pay nothing | Markets settle on time with no backend and no keeper service |
 | **Third source, 2-of-3 agreement** | METAR airport reports for ports near an airport, Open-Meteo Marine for wave height; two agreeing sources settle | Far fewer voids, and new metrics: wave height, visibility, multi-day windows |
 
 ### Also on the list
 
-- **Base rates on every market** — how often the threshold was crossed at
+- **Base rates on every market:** how often the threshold was crossed at
   that station on recent days, computed in the browser from public
   archives, so positions are priced from evidence.
-- **Appeal bonds and a longer window** — the appellant posts a bond that is
+- **Appeal bonds and a longer window:** the appellant posts a bond that is
   refunded when the appeal changes the outcome; the window grows from v1's
   demo-sized 60 minutes to 24 hours.
-- **Verdicts other contracts can read** — e.g. a shipping escrow whose
+- **Verdicts other contracts can read,** e.g. a shipping escrow whose
   force-majeure clause checks an Isobar verdict, making Isobar
   infrastructure rather than only an app.
-- **Community-proposed locations** — anyone proposes a port; validators
+- **Community-proposed locations:** anyone proposes a port; validators
   confirm the coordinates are a real port before it joins the catalog.
 
 ## The docs
 
-[PROBE-REPORT](docs/PROBE-REPORT.md) — measurements with receipts ·
-[ARCHITECTURE](docs/ARCHITECTURE.md) — how the pieces fit ·
-[THREAT-MODEL](docs/THREAT-MODEL.md) — who can cheat whom, and what stops them
+[PROBE-REPORT](docs/PROBE-REPORT.md): measurements with receipts ·
+[ARCHITECTURE](docs/ARCHITECTURE.md): how the pieces fit ·
+[THREAT-MODEL](docs/THREAT-MODEL.md): who can cheat whom, and what stops them

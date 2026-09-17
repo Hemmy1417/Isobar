@@ -60,4 +60,4 @@ export function ActBlocked({ label, reason }: { label: string; reason?: string }
 }
 
 export const DEMO_PRICING_NOTE =
-  "Multipliers are flat demo pricing, not market odds — every surface says so, because pretending otherwise would be the real gamble.";
+  "Multipliers are flat demo pricing, not market odds. Every surface says so, because pretending otherwise would be the real gamble.";

@@ -21,9 +21,9 @@ import { TestGen } from "../../components/TestGen";
 import { WalletChoices } from "../../components/WalletButton";
 
 const THRESHOLD_HINTS: Record<string, string> = {
-  WIND_MAX: "Gale force begins around 17 m/s; a stiff breeze is 8–10.",
+  WIND_MAX: "Gale force begins around 17 m/s; a stiff breeze is 8 to 10.",
   PRECIP_SUM: "10 mm is a wet day; 50 mm is a deluge.",
-  TEMP_MAX: "Pick the line that matters — heat limits for port work often sit near 35 °C.",
+  TEMP_MAX: "Pick the line that matters: heat limits for port work often sit near 35 °C.",
 };
 
 export default function NewMarketPage() {
@@ -103,8 +103,8 @@ export default function NewMarketPage() {
           </select>
           <span className="hint">
             {fast
-              ? `Fast lane: a US weather station plus Open-Meteo — resolvable about ${1 + lag} days after the date.`
-              : `Global lane: Open-Meteo plus NASA POWER — resolvable about ${1 + lag} days after the date.`}
+              ? `Fast lane: a US weather station plus Open-Meteo, resolvable about ${1 + lag} days after the date.`
+              : `Global lane: Open-Meteo plus NASA POWER, resolvable about ${1 + lag} days after the date.`}
           </span>
         </div>
         <div className="row" style={{ alignItems: "flex-start", flexWrap: "wrap" }}>
@@ -141,7 +141,7 @@ export default function NewMarketPage() {
       <div className="card" style={{ marginTop: 16 }}>
         <p className="small" style={{ fontWeight: 600 }}>The question this opens</p>
         <p style={{ marginTop: 6, fontFamily: "var(--font-display)", fontSize: 19 }}>
-          {loc ? marketQuestion({ metric, comparison, threshold_x100: thresholdX100 || 0, unit, window_date: date }, loc.name) : "—"}
+          {loc ? marketQuestion({ metric, comparison, threshold_x100: thresholdX100 || 0, unit, window_date: date }, loc.name) : "Choose a location to see the question."}
         </p>
         <p className="fine" style={{ marginTop: 8 }}>
           Judged against {fast ? `${sourceName("nws")} and ${sourceName("open-meteo")}` : `${sourceName("open-meteo")} and ${sourceName("nasa-power")}`} on {formatDocDate(date)}.
@@ -167,7 +167,7 @@ export default function NewMarketPage() {
             </button>
           </div>
         )}
-        {address && !chainOk ? <p className="fine" style={{ marginTop: 8 }}>Your wallet is on another network — switch from the header.</p> : null}
+        {address && !chainOk ? <p className="fine" style={{ marginTop: 8 }}>Your wallet is on another network. Switch from the header.</p> : null}
         {address ? <div style={{ marginTop: 10 }}><TestGen /></div> : null}
       </div>
     </div>

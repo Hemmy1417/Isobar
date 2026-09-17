@@ -34,7 +34,7 @@ contracts/isobar.py      # the whole mechanism: markets, consensus, appeal, parl
 tests/
   direct/                # conftest.py stub harness (validators run on every call) + test_sdk_runner.py (official runner)
   integration/           # gltest suite against Studio Next
-frontend/                # Next.js app ("the pressure room") — Vercel Root Directory: frontend
+frontend/                # Next.js app ("the pressure room"); Vercel Root Directory: frontend
   lib/network.ts         # the one network config shared by wallet, genlayer-js and Transaction Kit
   lib/kit.ts             # Transaction Kit RC2 + simulated message allocations for payouts
   lib/read.ts            # budgeted, cached contract reads (Studio Next: 30 gen_call / rolling minute / IP)
@@ -43,7 +43,7 @@ deploy/deployScript.ts   # `genlayer deploy` entry point
 docs/                    # PROBE-REPORT, ARCHITECTURE, THREAT-MODEL, DEMO-SCRIPT
 ```
 
-**Network**: GenLayer Studio Next only — `https://studio-next.genlayer.com/api`, chain id 61997,
+**Network**: GenLayer Studio Next only: `https://studio-next.genlayer.com/api`, chain id 61997,
 explorer `https://explorer-studio-dev.genlayer.com`.
 
 **Deployment of record**: `frontend/lib/config.ts` (`DEPLOYMENT_OF_RECORD`). It is byte-verified
@@ -54,7 +54,7 @@ live proofs before the address in the app, README and scripts can move.
 
 - **Runner pin**: the contract's `Depends` hash `5jycge4q…` is the runner Studio Next serves. The
   boilerplate's `9b8kjyda…` is rejected on deploy (`invalid_contract runner malformed`) and missing
-  from the pinned linter's bundle — do not "update" the header to it.
+  from the pinned linter's bundle. Do not "update" the header to it.
 - **Clock**: `datetime.now(timezone.utc)` is the transaction datetime on this runner; `gl.message_raw`
   does not exist.
 - **Payable refusals return, never raise**: on Studio Next a raise reverts a refund credit while the
@@ -67,7 +67,7 @@ live proofs before the address in the app, README and scripts can move.
   string. Wallets report lowercase; `accountOf` in `frontend/lib/wallet.tsx` checksums. The faucet
   (`sim_fundAccount`, amount in atto) credits only checksummed addresses too.
 - **Fee profile**: a gltest-measured profile (`npm run test:fees`) underfunds receipts on Studio
-  Next — Kit-style writes priced from it finalized with `out_of receipt message`. Keep
+  Next: Kit-style writes priced from it finalized with `out_of receipt message`. Keep
   `frontend/fee-profile.json` at chainId 61997 with no method entries unless a new profile is
   proven by live writes first.
 - **Line endings**: `.gitattributes` forces LF; a CRLF contract can never byte-verify.
@@ -76,17 +76,17 @@ live proofs before the address in the app, README and scripts can move.
 ## Linting
 
 `genvm-lint check` runs lint and SDK validation. Validation passes. Lint reports one finding, E022 on
-the `@staticmethod` `_snapshot_agrees` — valid Python that runs in live consensus rounds; fixing it
+the `@staticmethod` `_snapshot_agrees`, valid Python that runs in live consensus rounds; fixing it
 changes contract bytes (redeploy). CI allows exactly that finding and fails on anything else.
 
 ## Writing tests
 
 Direct mode has two instruments:
 
-- `tests/direct/conftest.py` — a strict stub SDK: every validator runs on every nondet call,
+- `tests/direct/conftest.py`: a strict stub SDK. Every validator runs on every nondet call,
   leader and validators can be served different bytes, fetches are counted per role, the clock is
   set per test, public writes revert state on raise like the runtime. Use it for consensus attacks.
-- `tests/direct/test_sdk_runner.py` — the official runner (`direct_vm`, `direct_deploy`): the real
+- `tests/direct/test_sdk_runner.py`: the official runner (`direct_vm`, `direct_deploy`), the real
   SDK. Validators run only via `direct_vm.run_validator()`; LLM mocks are double-JSON-encoded;
   pass checksummed addresses (`Address(addr).as_hex`) to views.
 

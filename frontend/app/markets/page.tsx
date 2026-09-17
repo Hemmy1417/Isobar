@@ -80,7 +80,7 @@ export default function MarketsPage() {
       {markets && shown.length === 0 && progress.answered >= progress.total ? (
         <Empty>
           {filter === "all"
-            ? "No markets yet on this deployment. Open the first one — the catalog has sixteen strategic locations waiting."
+            ? "No markets yet on this deployment. Open the first one: the catalog has sixteen strategic locations waiting."
             : "Nothing in this state right now."}
         </Empty>
       ) : null}

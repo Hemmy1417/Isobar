@@ -19,7 +19,7 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
         <h3>Evidence</h3>
         <p className="muted small" style={{ marginTop: 8 }}>
           No round has run yet. When one does, every validator fetches both sources itself,
-          and what they agreed on is recorded here — readings, data-quality findings and the
+          and what they agreed on is recorded here: readings, data-quality findings and the
           quotes that back them.
         </p>
       </div>
@@ -48,13 +48,13 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
             <div key={r.round} className="panel">
               <div className="spread" style={{ flexWrap: "wrap", gap: 8 }}>
                 <p className="small" style={{ fontWeight: 600 }}>
-                  Round {r.round} · {r.kind === "APPEAL" ? "Appeal — re-read the recorded evidence" : "Resolution"}
+                  Round {r.round} · {r.kind === "APPEAL" ? "Appeal: re-read the recorded evidence" : "Resolution"}
                 </p>
                 <span className="fine">{formatDateTime(r.at)}</span>
               </div>
               {r.kind === "APPEAL" ? (
                 <p className="fine" style={{ marginTop: 4 }}>
-                  Judged the exact evidence round {r.reviewed_round} recorded — nothing refetched,
+                  Judged the exact evidence round {r.reviewed_round} recorded. Nothing was refetched,
                   so the appellant argued against the same bytes the first panel saw.
                   {r.grounds ? <> Grounds: “{r.grounds}”</> : null}
                 </p>
@@ -82,7 +82,7 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
               <div className="divider" />
               <p className="small">
                 {r.outcome.kind === "VERDICT" ? (
-                  <><b>{verdictLabel(r.outcome.verdict)}</b> — derived in code from the agreed readings.</>
+                  <><b>{verdictLabel(r.outcome.verdict)}</b>. Derived in code from the agreed readings.</>
                 ) : (
                   <><b>No verdict this round.</b> {sentence(r.outcome.reason)} The round is recorded and the market stays resolvable.</>
                 )}
@@ -108,7 +108,7 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
         })}
       </div>
       <p className="fine" style={{ marginTop: 12 }}>
-        Every round is a finalized transaction on GenLayer — the readings above are what a
+        Every round is a finalized transaction on GenLayer. The readings above are what a
         majority of validators, each fetching the sources independently, agreed to record.
       </p>
     </div>

@@ -56,14 +56,14 @@ export function TestGen({ compact = false }: { compact?: boolean }) {
 
   const low = balance !== null && balance < LOW_BALANCE_WEI;
   const label = funding === "busy" ? "Sending test GEN…"
-    : funding === "failed" ? "Faucet did not answer — try again"
+    : funding === "failed" ? "Faucet did not answer. Try again"
     : `Get ${formatGen(TEST_GEN_WEI)} test GEN`;
 
   return (
     <div className={`testgen${low && !compact ? " testgen-low" : ""}`}>
       <span className="fine">
         {balance === null ? "Reading your wallet balance…" : `Wallet: ${formatGen(balance)} test GEN`}
-        {low && !compact ? " — you need test GEN to take part." : ""}
+        {low && !compact ? ". You need test GEN to take part." : ""}
         {funding === "done" && !low ? " Sent." : ""}
       </span>
       <button type="button" className={`btn ${low ? "btn-primary" : "btn-ghost"}`} style={{ paddingBlock: 5 }}

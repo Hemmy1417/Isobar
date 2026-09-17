@@ -24,7 +24,7 @@ const PHASE_TEXT: Record<string, string> = {
   submitted: "Signed and submitted",
   pending: "Waiting in the queue",
   processing: "Validators are executing it",
-  decided: "Decided — awaiting finality",
+  decided: "Decided, awaiting finality",
   finalized: "Finalized",
 };
 
@@ -103,7 +103,7 @@ export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, onClose, co
               <span className="reading">{kitFormatGen(value)} GEN</span></div>
           ) : null}
           <div className="spread small"><span className="muted">Refundable fee deposit</span>
-            <span className="reading">{q.gasless ? "none — gasless network" : `${kitFormatGen(q.feeValue)} GEN`}</span></div>
+            <span className="reading">{q.gasless ? "None (gasless network)" : `${kitFormatGen(q.feeValue)} GEN`}</span></div>
           <div className="spread small"><span className="muted">Total leaving the wallet</span>
             <span className="reading">{kitFormatGen(q.total)} GEN</span></div>
           {q.queue?.pendingAhead ? (

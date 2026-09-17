@@ -156,7 +156,7 @@ export default function MePage() {
                   </span>
                 </div>
                 <p className="fine" style={{ marginTop: 6 }}>
-                  {formatGen(BigInt(t.stake_wei))} GEN at {multiplierText(t.multiplier_x100)} — demo pricing.
+                  {formatGen(BigInt(t.stake_wei))} GEN at {multiplierText(t.multiplier_x100)} (demo pricing).
                   Manage it from <Link href="/parlay">the parlay page</Link>.
                 </p>
               </div>

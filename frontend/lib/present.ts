@@ -16,7 +16,7 @@ const lookup = (map: Record<string, string>, v: string | null | undefined) =>
   v ? (map[v] ?? humanize(v)) : "";
 
 export function sentence(text: string | null | undefined): string {
-  const t = (text ?? "").trim();
+  const t = (text ?? "").replace(/\s*[—–]\s*/g, ", ").trim();
   if (!t) return "";
   const capped = t.charAt(0).toUpperCase() + t.slice(1);
   return /[.!?…)]$/.test(capped) ? capped : `${capped}.`;
@@ -31,7 +31,7 @@ const PHASE: Record<string, string> = {
   OPEN: "Open for positions",
   OBSERVING: "Observing",
   RESOLVING: "Ready to resolve",
-  RESOLVED: "Resolved — appeal window",
+  RESOLVED: "Resolved, appeal window open",
   FINAL: "Final",
   VOID: "Void",
 };
@@ -42,9 +42,9 @@ export const phaseChip = (p: string) =>
      RESOLVED: "resolved", FINAL: "final", VOID: "void" }[p] ?? "open");
 
 const VERDICT: Record<string, string> = {
-  YES: "Yes — threshold met",
-  NO: "No — threshold not met",
-  VOID_CONFLICT: "Void — sources disagreed",
+  YES: "Yes, threshold met",
+  NO: "No, threshold not met",
+  VOID_CONFLICT: "Void, sources disagreed",
 };
 export const verdictLabel = (v: string | null) => (v ? lookup(VERDICT, v) : "");
 export const verdictShort = (v: string | null) =>
@@ -89,8 +89,8 @@ export const readingText = (x100: number | null | undefined, unit: string) =>
     : `${(x100 / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })} ${unit}`;
 
 const LANE: Record<string, string> = {
-  FAST: "Fast lane — station data, resolves about 2 days after the date",
-  GLOBAL: "Global lane — reanalysis data, resolves about 5 days after the date",
+  FAST: "Fast lane: station data, resolves about 2 days after the date",
+  GLOBAL: "Global lane: reanalysis data, resolves about 5 days after the date",
 };
 export const laneText = (l: string) => lookup(LANE, l);
 

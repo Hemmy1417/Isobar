@@ -118,7 +118,7 @@ export default function ParlayPage() {
       <div>
         <h1 style={{ fontSize: 30 }}>Parlay</h1>
         <p className="muted small" style={{ marginTop: 4, maxWidth: 640 }}>
-          One ticket over {config.min_legs}–{config.max_legs} open markets. Every leg must land
+          One ticket over {config.min_legs} to {config.max_legs} open markets. Every leg must land
           your way; a voided leg drops out of the multiplier instead of killing the ticket.
         </p>
       </div>
@@ -128,7 +128,7 @@ export default function ParlayPage() {
           <h3>Open legs</h3>
           {!loaded && open.length === 0 ? <Loading what="open markets" /> : null}
           {loaded && open.length === 0 ? (
-            <Empty>No market is open for positions right now. <Link href="/markets/new">Open one</Link> — it becomes a leg the moment it exists.</Empty>
+            <Empty>No market is open for positions right now. <Link href="/markets/new">Open one</Link>; it becomes a leg the moment it exists.</Empty>
           ) : null}
           {open.map((m) => {
             const side = picked[m.market_id];
@@ -189,22 +189,22 @@ export default function ParlayPage() {
               <label htmlFor="ticket-stake">Stake in GEN</label>
               <input id="ticket-stake" inputMode="decimal" value={stake} onChange={(e) => setStake(e.target.value)} />
               <span className="hint">
-                {formatGen(BigInt(config.min_ticket_stake_wei))}–{formatGen(BigInt(config.max_ticket_stake_wei))} GEN per ticket.
+                {formatGen(BigInt(config.min_ticket_stake_wei))} to {formatGen(BigInt(config.max_ticket_stake_wei))} GEN per ticket.
               </span>
             </div>
             <div className="spread small">
               <span className="muted">Multiplier ({plural(legs.length, "leg")})</span>
-              <span className="reading">{legs.length >= config.min_legs ? multiplierText(mult) : "—"}</span>
+              <span className="reading">{legs.length >= config.min_legs ? multiplierText(mult) : `needs ${config.min_legs} legs`}</span>
             </div>
             <div className="spread small" style={{ marginTop: 4 }}>
               <span className="muted">Pays if every leg hits</span>
-              <span className="reading">{payoutWei !== null && legs.length >= config.min_legs ? `${formatGen(payoutWei)} GEN` : "—"}</span>
+              <span className="reading">{payoutWei !== null && legs.length >= config.min_legs ? `${formatGen(payoutWei)} GEN` : `needs ${config.min_legs} legs`}</span>
             </div>
             <p className="fine" style={{ marginTop: 8 }}>{DEMO_PRICING_NOTE}</p>
             <p className="fine" style={{ marginTop: 4 }}>A ticket the contract declines credits your stake back to your claimable balance.</p>
             {reserveShort ? (
               <p className="notice notice-warn" style={{ marginTop: 8 }}>
-                The on-chain reserve cannot back this payout right now — a smaller stake fits.
+                The on-chain reserve cannot back this payout right now. A smaller stake fits.
               </p>
             ) : null}
             <div style={{ marginTop: 10 }}><TestGen /></div>
@@ -218,7 +218,7 @@ export default function ParlayPage() {
                            if (bought.current) { bought.current = false; setPicked({}); setTick((t) => t + 1); }
                            setReviewing(false);
                          }}
-                         confirmText={`Buy the ticket — ${stake} GEN at ${multiplierText(mult)}`} />
+                         confirmText={`Buy the ticket: ${stake} GEN at ${multiplierText(mult)}`} />
               ) : (
                 <button className="btn btn-primary" style={{ width: "100%" }}
                         disabled={!legsOk || !stakeOk || reserveShort || !chainOk || !kit}

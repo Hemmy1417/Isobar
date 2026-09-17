@@ -20,7 +20,7 @@ begins.
 window's first second, and the refused value is credited straight back.
 
 *Flood the book.* Per-wallet stake caps, a bounded staker registry, a
-bounded market count — every cap refuses in words.
+bounded market count. Every cap refuses in words.
 
 ## A malicious leader (the strongest adversary)
 
@@ -31,8 +31,8 @@ and fails the round.
 *Store bytes nobody else saw, behind a self-consistent digest.* The digest
 must cover the stored excerpt AND the excerpt must be prefix-compatible
 with each validator's own fetch of the same stable form; an internally
-consistent forgery still fails prefix comparison. The empty string —
-a prefix of everything — is refused explicitly on a fetched row.
+consistent forgery still fails prefix comparison. The empty string
+(a prefix of everything) is refused explicitly on a fetched row.
 
 *Claim coverage during an outage only the leader escaped.* A validator
 that cannot fetch a source the leader calls covered refuses the round;
@@ -58,7 +58,7 @@ Grounds are defused so typed text cannot impersonate a fetched fence.
 a ticket on the market.
 
 *Settle before the other side can dispute.* Finalize refuses while the
-window is open and no appeal is on the record — proven live, including a
+window is open and no appeal is on the record, proven live, including a
 void verdict's own window.
 
 ## The operator / deployer
@@ -71,11 +71,11 @@ permissionless or bound to the signer.
 ## The platform
 
 *A payable write that reverts still credits the contract* (measured on
-this network) — so refusals credit the value back to the sender's ledger
+this network), so refusals credit the value back to the sender's ledger
 instead of relying on revert semantics.
 
 *Long pending spells happen* (an 83-minute finality gap was observed
-mid-run) — nothing in the contract depends on timely inclusion; windows
+mid-run). Nothing in the contract depends on timely inclusion; windows
 are generous multiples of observed lag, and the timeout void frees stakes
 if resolution never lands.
 

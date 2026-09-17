@@ -59,7 +59,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
       <div className="card">
         <h3 style={{ marginBottom: 8 }}>Take part</h3>
         <p className="fine" style={{ marginBottom: 10 }}>
-          Positions, appeals and settlements are signed by your own wallet — there is no account to create.
+          Positions, appeals and settlements are signed by your own wallet. There is no account to create.
         </p>
         <div className="stack" style={{ gap: 8 }}>
           {wallets.map((w) => (
@@ -68,7 +68,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
               Connect {w.info.name}
             </button>
           ))}
-          {wallets.length === 0 ? <p className="fine">No wallet extension found — install MetaMask or another EVM wallet.</p> : null}
+          {wallets.length === 0 ? <p className="fine">No wallet extension found. Install MetaMask or another EVM wallet.</p> : null}
           {walletError ? <p className="notice notice-bad">{walletError}</p> : null}
         </div>
       </div>
@@ -85,10 +85,10 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
           <p className="small" style={{ fontWeight: 600, marginBottom: 8 }}>Take a position</p>
           <div className="row" style={{ marginBottom: 8 }}>
             <button className={`btn btn-side ${side === "YES" ? "picked-yes" : ""}`} onClick={() => setSide("YES")}>
-              Yes — it happens
+              Yes, it happens
             </button>
             <button className={`btn btn-side ${side === "NO" ? "picked-no" : ""}`} onClick={() => setSide("NO")}>
-              No — it does not
+              No, it does not
             </button>
           </div>
           <div className="field" style={{ marginBottom: 8 }}>
@@ -97,7 +97,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
             <span className="hint">
               Minimum {formatGen(BigInt(config.min_stake_wei))} GEN. Winners split the losing pool
               pro-rata; a void market refunds every stake. A stake the contract declines is
-              credited straight to your claimable balance — never kept.
+              credited straight to your claimable balance, never kept.
             </span>
           </div>
           <div style={{ marginBottom: 8 }}><TestGen /></div>
@@ -110,7 +110,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
               Review the stake
             </button>
           )}
-          {!chainOk ? <p className="fine" style={{ marginTop: 6 }}>Your wallet is on another network — switch from the header.</p> : null}
+          {!chainOk ? <p className="fine" style={{ marginTop: 6 }}>Your wallet is on another network. Switch from the header.</p> : null}
         </div>
       ) : (
         <div style={{ marginBottom: 12 }}><ActBlocked label="Take a position" reason={byId.stake.reason} /></div>
@@ -145,7 +145,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
           <p className="small" style={{ fontWeight: 600 }}>Appeal the verdict</p>
           <p className="fine" style={{ marginBottom: 8 }}>
             The one appeal {marketNumber(m.market_id)} allows. A fresh panel re-reads the
-            RECORDED evidence — the same bytes the first round agreed on — and the same code
+            RECORDED evidence (the same bytes the first round agreed on) and the same code
             re-derives. It can uphold the verdict or void the market; it never invents a new one.
           </p>
           <div className="field" style={{ marginBottom: 8 }}>

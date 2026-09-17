@@ -49,7 +49,7 @@ export function LifecycleRail({ market: m, config, nowMs }: {
       detail: resolved
         ? `run ${m.rounds_count}, recorded on chain`
         : m.rounds_count > 0
-          ? `${plural(m.rounds_count, "round")} retried — corroboration not yet possible`
+          ? `${plural(m.rounds_count, "round")} retried; corroboration not yet possible`
           : "any wallet triggers it; every validator fetches both sources",
       state: resolved ? "done" : nowMs >= canResolveAt ? "now" : "todo",
     },
@@ -67,7 +67,7 @@ export function LifecycleRail({ market: m, config, nowMs }: {
     },
     {
       key: "final",
-      title: m.state === "VOID" ? "Void — every stake refunded" : "Final — pools settle",
+      title: m.state === "VOID" ? "Void: every stake refunded" : "Final: pools settle",
       detail: settled
         ? `${formatDateTime(m.finalized_at)}${m.void_reason ? ` · ${m.void_reason}` : ""}`
         : "settlement never front-runs the right to dispute",

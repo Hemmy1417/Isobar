@@ -233,6 +233,15 @@ export function invalidateReads(): void {
 
 /** The contract's rules and catalog (immutable) plus the live reserve
  *  figures (not): pass `fresh` wherever the reserve decides a button. */
+/** The contract's catalog names use dashes ("Panama Canal — Colón"); the
+ *  contract is byte-verified, so the screen spells them "Panama Canal, Colón". */
+function withPlainNames(c: ConfigView): ConfigView {
+  const locations = Object.fromEntries(
+    Object.entries(c.locations).map(([id, l]) => [id, { ...l, name: l.name.replace(/\s*[—–]\s*/g, ", ") }]),
+  );
+  return { ...c, locations };
+}
+
 export async function getConfig(fresh = false): Promise<ConfigView> {
   if (!fresh) {
     const hit = cached<ConfigView>("config");
@@ -242,7 +251,7 @@ export async function getConfig(fresh = false): Promise<ConfigView> {
   }
   // One in-flight read shared by every caller; a failure is not cached.
   configFlight ??= view<ConfigView>("get_config", [])
-    .then((c) => remember("config", c))
+    .then((c) => remember("config", withPlainNames(c)))
     .finally(() => { configFlight = null; });
   return configFlight;
 }

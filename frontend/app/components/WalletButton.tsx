@@ -33,7 +33,7 @@ export function WalletButton() {
         {!chainOk ? (
           <button type="button" className="btn btn-ghost" style={{ marginRight: 8, color: "var(--warn)" }}
                   onClick={() => void switchNetwork()}>
-            Wrong network — switch
+            Wrong network: switch
           </button>
         ) : null}
         <button type="button" className="btn btn-ghost mono" onClick={() => setOpen((v) => !v)}

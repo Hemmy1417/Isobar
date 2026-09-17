@@ -33,7 +33,7 @@ describe("values and identifiers", () => {
 
   it("phases and verdicts read as words with a fallback", () => {
     expect(phaseLabel("RESOLVING")).toBe("Ready to resolve");
-    expect(verdictLabel("VOID_CONFLICT")).toBe("Void — sources disagreed");
+    expect(verdictLabel("VOID_CONFLICT")).toBe("Void, sources disagreed");
     expect(phaseLabel("SOME_FUTURE_STATE")).toBe("Some future state");
   });
 

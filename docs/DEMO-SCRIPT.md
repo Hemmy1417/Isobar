@@ -1,50 +1,50 @@
-# Demo script — about 3 minutes
+# Demo script: about 3 minutes
 
 One take, screen-recorded on the live site. I drive; you record and speak
 (or record silent and add the lines after). Times are guides, not gates.
 
-## 0:00 — The map (the hook)
+## 0:00 · The map (the hook)
 
 Open `/map`. Let the isobar field and stations breathe for two seconds.
 
-> "This is Isobar — weather risk, adjudicated. Sixteen choke points of
+> "This is Isobar: weather risk, adjudicated. Sixteen choke points of
 > global logistics: canals, straits, ports. Every dot is a station;
 > every color is a market's state, live from the chain."
 
 Click Panama. Its markets slide in.
 
-## 0:25 — A market is a falsifiable question
+## 0:25 · A market is a falsifiable question
 
 Open a market from the list. Point at the question line.
 
 > "A market asks one question a machine can check: will daily maximum
 > wind reach this threshold, at these coordinates, on this UTC date.
-> No vibes, no 'bad weather' — a number, a place, a day."
+> No vibes, no 'bad weather': a number, a place, a day."
 
 Point at the sources line and the dispute radar rail.
 
-> "Two independent public agencies answer it — different organizations,
-> different data lineages — and this rail is the market's whole life:
+> "Two independent public data sources answer it (different organizations,
+> different data lineages), and this rail is the market's whole life:
 > positions close before the day begins, so nobody bets on weather
 > that's already happened."
 
-## 0:55 — Money in
+## 0:55 · Money in
 
 Connect the wallet (MetaMask pops; approve on camera). If the stake panel
 says the wallet needs test GEN, click **Get 10 test GEN** first. Stake on YES.
-The review panel appears — fee receipt, queue, the works.
+The review panel appears: fee receipt, queue, the works.
 
-> "Stakes are parimutuel — winners split the losing pool, the pool is
+> "Stakes are parimutuel: winners split the losing pool, and the pool is
 > the price. And this is GenLayer's transaction flow: a priced,
 > verified fee quote before I sign, and 'confirmed' only at finality."
 
 Wait for the tracker to walk to Finalized.
 
-## 1:30 — The verdict, and who decided it
+## 1:30 · The verdict, and who decided it
 
 Open a RESOLVED market. Until the deployment of record's first verdicts
-land (fast lane 19 Sep, global lane 22–23 Sep), film this scene on the
-**proving-ground contract** — the same code with only its date gates
+land (fast lane 19 Sep, global lane 22 to 23 Sep), film this scene on the
+**proving-ground contract**: the same code with only its date gates
 opened, resolved against the real recorded weather of 11 Sep at Colón:
 
 ```
@@ -56,26 +56,26 @@ Market #1 (YES, appeal upheld), #2 (void: the two reanalyses disagreed),
 evidence panel, then toggle the verification view. Say on camera that this
 is the proving-ground deployment.
 
-> "When the day has passed, every validator fetches both agencies
-> itself. They must agree on the recorded evidence line by line —
-> readings, excerpts, digests. The AI panel judges only whether the
+> "Once the data is published, any wallet triggers the round and every
+> validator fetches both sources itself. They must agree on the recorded
+> evidence line by line: readings, excerpts, digests. The AI panel judges only whether the
 > data is trustworthy, quoting the payload; the verdict itself is
 > derived by contract code from the agreed readings. And when the two
-> agencies disagree — that happens, they're different reanalyses —
+> sources disagree (that happens; they're different reanalyses),
 > nobody settles: the market voids and every stake goes home."
 
 Point at the appeal card (or the recorded appeal round if one exists).
 
 > "Disagree with a verdict? One appeal, from a wallet with money at
-> stake, re-reads the exact recorded evidence — not a fresh fetch a
+> stake, re-reads the exact recorded evidence, not a fresh fetch a
 > party could have gamed. Settlement waits for that window. Always."
 
-## 2:20 — The parlay
+## 2:20 · The parlay
 
-Open `/parlay`. Pick two legs — Panama wind (#9) and Hamburg wind (#10).
+Open `/parlay`. Pick two legs: Panama wind (#9) and Hamburg wind (#10).
 Point at the multiplier.
 
-> "Markets chain into a parlay — Panama wind and a Hamburg gale on one
+> "Markets chain into a parlay: Panama wind and a Hamburg gale on one
 > ticket. Flat demo multipliers, labeled as demo pricing on every
 > surface, and the full payout is reserved from a visible on-chain pool
 > the moment the ticket is bought. A voided leg drops out instead of
@@ -83,12 +83,12 @@ Point at the multiplier.
 
 Buy the ticket (second wallet confirm on camera).
 
-## 2:50 — Close
+## 2:50 · Close
 
 Back to `/map`, then a beat on `/how`.
 
 > "One contract on GenLayer Studio Next, byte-verified against the
-> repo. Every verdict, every refusal, every payout — a finalized
+> repo. Every verdict, every refusal, every payout is a finalized
 > transaction anyone can check. Isobar: the weather will settle this."
 
 ## Prep checklist (before recording)

@@ -120,7 +120,7 @@ async function ensureChain(provider: Eip1193): Promise<void> {
 function walletErrorMessage(err: unknown): string {
   const code = (err as { code?: number })?.code;
   if (code === 4001) return "You declined in the wallet. Nothing was sent.";
-  if (code === -32002) return "The wallet already shows a pending request — open it to continue.";
+  if (code === -32002) return "The wallet already shows a pending request. Open it to continue.";
   return `The wallet refused: ${String((err as Error)?.message ?? err).slice(0, 140)}`;
 }
 

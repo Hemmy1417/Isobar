@@ -40,7 +40,7 @@ export function LifecycleRail({ market: m, config, nowMs }: {
     {
       key: "cover",
       title: "Sources cover the date",
-      detail: `both agencies publish by ${formatDateTime(new Date(canResolveAt).toISOString())}`,
+      detail: `both sources publish by ${formatDateTime(new Date(canResolveAt).toISOString())}`,
       state: resolved ? "done" : nowMs >= canResolveAt ? "done" : nowMs >= start ? "now" : "todo",
     },
     {

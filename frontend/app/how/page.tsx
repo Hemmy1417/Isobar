@@ -42,7 +42,7 @@ export default function HowPage() {
       </section>
 
       <section className="card">
-        <h3>3 · Evidence: two independent agencies, fetched by every validator</h3>
+        <h3>3 · Evidence: two independent sources, fetched by every validator</h3>
         <p className="small muted" style={{ marginTop: 8 }}>
           The contract builds both evidence URLs in code. Worldwide, that is Open-Meteo (the
           ERA5 reanalysis) and NASA POWER (the MERRA-2 reanalysis) — different organizations,

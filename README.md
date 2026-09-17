@@ -3,7 +3,7 @@
 <h1 align="center">Isobar</h1>
 
 <p align="center">Parimutuel weather-threshold markets, adjudicated on GenLayer.<br>
-Every validator fetches two independent agencies itself; deterministic code derives the verdict;<br>
+Every validator fetches two independent public data sources itself; deterministic code derives the verdict;<br>
 one appeal re-reads the agreed record before any money moves.</p>
 
 ---
@@ -42,7 +42,7 @@ Weather "truth" is plural. Two reputable datasets disagree at the margin,
 stations go dark mid-window, agencies revise readings. A price-feed oracle
 cannot adjudicate that; a centralized backend must be trusted not to. Here
 the money question is answered *inside consensus*: validators each fetch two
-independent public agencies — different organizations, different data
+independent public data sources — different organizations, different data
 lineages — agree on the recorded evidence row by row, and judge the messy
 parts (does this payload truly cover the date? is it trustworthy enough to
 settle on?) with quotes that must appear in the fetched bytes. The payout
@@ -87,7 +87,7 @@ direction, because honesty about disagreement beats a guess.
 ```
 open ──(window date begins)── observing ──(sources cover: +2d fast / +5d global)── resolving
                                                                                       │
-                       every validator fetches both agencies; code derives            ▼
+                       every validator fetches both sources; code derives             ▼
   YES / NO ◄──────────────────────────────────────────────────────────── resolution round
      │                                                    │                    │
      │                              sources split → VOID_CONFLICT       <2 covered → RETRY

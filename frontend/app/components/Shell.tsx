@@ -45,7 +45,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <footer className="wrap" style={{ paddingBlock: "26px 40px", borderTop: "1px solid var(--line-soft)" }}>
         <p className="fine">
           Isobar runs on GenLayer Studio Next with test GEN. Verdicts come from consensus over
-          two independent public weather agencies; parlay multipliers are demo pricing, labeled
+          two independent public weather data sources; parlay multipliers are demo pricing, labeled
           as such. Nothing here is financial advice or a real-money instrument.
         </p>
       </footer>

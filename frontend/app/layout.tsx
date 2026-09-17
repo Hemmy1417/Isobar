@@ -23,7 +23,7 @@ const martian = Martian_Mono({
 export const metadata: Metadata = {
   title: "Isobar",
   description:
-    "Weather-threshold markets, adjudicated: stake GEN on falsifiable daily weather questions at strategic logistics locations. Every validator fetches two independent agencies itself; deterministic code derives the verdict; one appeal re-reads the agreed record before settlement is final.",
+    "Weather-threshold markets, adjudicated on GenLayer: stake test GEN on falsifiable daily weather questions at the world's shipping choke points. Every validator fetches two independent public data sources itself; contract code derives the verdict; disagreeing sources void the market; one appeal re-reads the recorded evidence before anything pays out.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

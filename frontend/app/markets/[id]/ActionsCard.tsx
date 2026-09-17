@@ -120,7 +120,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
       {(["resolve", "finalize", "void_timeout"] as const).map((v) => {
         const act = byId[v];
         const blurb = v === "resolve"
-          ? "Every validator fetches both agencies and the panel judges the payload quality; code derives the verdict. A round takes a few minutes."
+          ? "Every validator fetches both sources and the panel judges the payload quality; code derives the verdict. A round takes a few minutes."
           : v === "finalize"
             ? "Credits every wallet's share to its claimable balance, exactly once."
             : "Frees every stake from a market that could never reach a verdict.";

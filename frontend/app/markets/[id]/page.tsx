@@ -6,7 +6,7 @@ import { addressUrl } from "../../../lib/chain";
 import { CONTRACT_ADDRESS, formatGen } from "../../../lib/config";
 import {
   formatDocDate, laneText, marketNumber, marketQuestion, metricLabel,
-  readingText, sourceName, verdictLabel,
+  readingText, sourceName, verdictSummary,
 } from "../../../lib/present";
 import { Empty, ErrorNotice, Loading, PhaseChip } from "../../components/bits";
 import { ActionsCard } from "./ActionsCard";
@@ -32,6 +32,7 @@ export default function MarketPage({ params }: { params: Promise<{ id: string }>
   const no = BigInt(m.no_pool_wei);
   const total = yes + no;
   const yesShare = total > 0n ? Number((yes * 1000n) / total) / 10 : 50;
+  const summary = verdictSummary(m);
 
   return (
     <div className="stack" style={{ gap: 18 }}>
@@ -49,17 +50,18 @@ export default function MarketPage({ params }: { params: Promise<{ id: string }>
         <PhaseChip phase={m.phase} />
       </div>
 
-      {m.verdict ? (
+      {summary ? (
         <div className={`notice ${m.verdict === "YES" ? "notice-ok" : m.verdict === "NO" ? "notice-bad" : "notice-warn"}`}>
-          <b>{verdictLabel(m.verdict)}</b>
-          {rounds.length ? (() => {
+          <b>{summary.title}</b>
+          {(() => {
             const last = rounds[rounds.length - 1];
-            const readings = Object.entries(last.outcome.readings ?? {})
+            const readings = Object.entries(last?.outcome.readings ?? {})
               .filter(([, r]) => r.covered)
               .sort(([a], [b]) => m.sources.findIndex((x) => x.source === a) - m.sources.findIndex((x) => x.source === b))
               .map(([s, r]) => `${sourceName(s)} read ${readingText(r.value_x100, m.unit)}`);
-            return readings.length ? <>: {readings.join("; ")} on {formatDocDate(m.window_date)}.</> : null;
-          })() : null}
+            return readings.length ? <>: {readings.join("; ")} on {formatDocDate(m.window_date)}.</> : ".";
+          })()}
+          {" "}{summary.sentence}
         </div>
       ) : null}
 

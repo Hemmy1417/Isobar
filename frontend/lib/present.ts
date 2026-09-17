@@ -102,6 +102,149 @@ const SOURCE_NAME: Record<string, string> = {
 };
 export const sourceName = (s: string) => lookup(SOURCE_NAME, s);
 
+/* ── what a round's evidence means ── */
+
+type Question = { comparison: string; threshold_x100: number; unit: string };
+
+/** Where one source stands in a round, from the agreed record. */
+export type SourceStatus =
+  | { kind: "reading"; x100: number; says: "YES" | "NO" }
+  | { kind: "not-accepted"; x100: number }
+  | { kind: "no-value" }
+  | { kind: "unreachable" };
+
+type Reading = Extract<SourceStatus, { kind: "reading" }>;
+
+export function sourceStatus(
+  m: Question,
+  reading: { covered: boolean; value_x100: number | null } | undefined,
+  row?: { fetched: boolean },
+): SourceStatus {
+  const x100 = reading?.value_x100;
+  if (reading?.covered && typeof x100 === "number") {
+    const met = m.comparison === "GTE" ? x100 >= m.threshold_x100 : x100 < m.threshold_x100;
+    return { kind: "reading", x100, says: met ? "YES" : "NO" };
+  }
+  if (typeof x100 === "number") return { kind: "not-accepted", x100 };
+  if (row && !row.fetched) return { kind: "unreachable" };
+  return { kind: "no-value" };
+}
+
+const sideWord = (says: "YES" | "NO") => (says === "YES" ? "Yes" : "No");
+
+/** The sentence under a source's name, split so the side can be coloured. */
+export function sourceStatusParts(m: Question, s: SourceStatus): { lead: string; says: "YES" | "NO" | null } {
+  switch (s.kind) {
+    case "reading": {
+      const where = s.x100 >= m.threshold_x100 ? "at or above" : "under";
+      return {
+        lead: `${readingText(s.x100, m.unit)} is ${where} ${readingText(m.threshold_x100, m.unit)}, so this source`,
+        says: s.says,
+      };
+    }
+    case "not-accepted":
+      return { lead: `${readingText(s.x100, m.unit)} was read, but the data check did not accept it.`, says: null };
+    case "unreachable":
+      return { lead: "The source did not answer.", says: null };
+    default:
+      return { lead: "No usable value for the date.", says: null };
+  }
+}
+
+/** "5.22 m/s is at or above 5 m/s, so this source says Yes." */
+export function sourceStatusText(m: Question, s: SourceStatus): string {
+  const { lead, says } = sourceStatusParts(m, s);
+  return says ? `${lead} says ${sideWord(says)}.` : lead;
+}
+
+/** The short label beside a source's name. */
+export function sourceStatusShort(m: Question, s: SourceStatus): string {
+  switch (s.kind) {
+    case "reading": return readingText(s.x100, m.unit);
+    case "not-accepted": return `${readingText(s.x100, m.unit)}, not accepted`;
+    case "unreachable": return "no answer";
+    default: return "no value";
+  }
+}
+
+/** Why a round ended the way it did, in words a person can check against the readings. */
+export function roundExplanation(
+  m: Question,
+  r: { kind: string; outcome: { kind: string; verdict: string | null } },
+  statuses: SourceStatus[],
+): { title: string; detail: string } {
+  const readings = statuses.filter((s): s is Reading => s.kind === "reading");
+  if (r.kind === "APPEAL") {
+    if (r.outcome.kind === "VERDICT") {
+      return {
+        title: `Upheld on appeal: ${verdictLabel(r.outcome.verdict)}`,
+        detail: "The appeal re-read the recorded evidence and reached the same verdict. An appeal "
+          + "can uphold or void a verdict; it can never flip Yes and No.",
+      };
+    }
+    const why = readings.length < 2
+      ? "did not accept both sources as covering the date"
+      : "judged the recorded data not trustworthy enough to settle on";
+    return {
+      title: "Voided on appeal",
+      detail: `The appeal panel ${why}, so nobody settles and every stake is refunded. An appeal `
+        + "can void a verdict; it can never flip Yes and No.",
+    };
+  }
+  if (r.outcome.kind === "VERDICT") {
+    if (r.outcome.verdict === "VOID_CONFLICT" && readings.length === 2) {
+      const values = readings.map((s) => s.x100);
+      const lo = readingText(Math.min(...values), m.unit);
+      const hi = readingText(Math.max(...values), m.unit);
+      return {
+        title: verdictLabel("VOID_CONFLICT"),
+        detail: "One source says Yes and the other says No, so nobody settles and every stake is "
+          + `refunded. On these readings, any threshold above ${lo} and up to ${hi} would void.`,
+      };
+    }
+    if (r.outcome.verdict === "YES" || r.outcome.verdict === "NO") {
+      const side = sideWord(r.outcome.verdict);
+      return {
+        title: verdictLabel(r.outcome.verdict),
+        detail: `Both sources say ${side}, so the verdict is ${side}. Derived in code from the agreed readings.`,
+      };
+    }
+    return { title: verdictLabel(r.outcome.verdict), detail: "Derived in code from the agreed readings." };
+  }
+  const why = readings.length === 0
+    ? "Neither source had a usable value for the date, and a verdict needs both."
+    : readings.length === 1
+      ? "Only one source had a usable value for the date, and a verdict needs both: no corroboration, no settlement."
+      : "Both sources had values, but the data check judged them not trustworthy enough to settle on.";
+  return {
+    title: "No verdict this round",
+    detail: `${why} The round is recorded; the market can try again until it reaches its round limit.`,
+  };
+}
+
+/** The headline and one sentence for a market's standing verdict. */
+export function verdictSummary(m: {
+  verdict: string | null;
+  appeal: { prior_verdict: string | null; final_verdict: string } | null;
+}): { title: string; sentence: string } | null {
+  if (!m.verdict) return null;
+  const appeal = m.appeal;
+  if (appeal && m.verdict === "VOID_CONFLICT" && appeal.prior_verdict !== "VOID_CONFLICT") {
+    return {
+      title: "Voided on appeal",
+      sentence: "The appeal did not accept the recorded evidence, so every stake is refunded.",
+    };
+  }
+  const upheld = appeal ? " Upheld on appeal." : "";
+  if (m.verdict === "YES" || m.verdict === "NO") {
+    return { title: verdictLabel(m.verdict), sentence: `Both sources say ${sideWord(m.verdict)}.${upheld}` };
+  }
+  return {
+    title: verdictLabel(m.verdict),
+    sentence: `One source says Yes and the other says No, so nobody settles and every stake is refunded.${upheld}`,
+  };
+}
+
 /* ── dates: spelled by hand so every browser reads the same ── */
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

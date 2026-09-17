@@ -9,7 +9,10 @@ import { useState } from "react";
 
 import { txUrl } from "../../../lib/chain";
 import { DEPLOYMENT_KIND, PROVING_GROUND_APP_URL } from "../../../lib/config";
-import { formatDateTime, readingText, sentence, sourceName, verdictLabel } from "../../../lib/present";
+import {
+  formatDateTime, roundExplanation, sentence, sourceName, sourceStatus, sourceStatusParts,
+  sourceStatusShort,
+} from "../../../lib/present";
 import type { MarketView, RoundView } from "../../../lib/types";
 import { ProvingGroundLink } from "../../components/ProvingGround";
 
@@ -56,6 +59,13 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
           const snapshot = (r.snapshot ?? []).slice().sort((a, b) => rank(a.source) - rank(b.source));
           const names = (snapshot.length ? snapshot.map((row) => row.source) : Object.keys(r.panel.sources))
             .slice().sort((a, b) => rank(a) - rank(b));
+          // An appeal record carries no snapshot of its own: it judged the reviewed round's.
+          const rows = snapshot.length
+            ? snapshot
+            : rounds.find((x) => x.round === r.reviewed_round)?.snapshot ?? [];
+          const statuses = names.map((name) => sourceStatus(
+            m, r.outcome.readings?.[name], rows.find((row) => row.source === name)));
+          const why = roundExplanation(m, r, statuses);
           return (
             <div key={r.round} className="panel">
               <div className="spread" style={{ flexWrap: "wrap", gap: 8 }}>
@@ -72,32 +82,32 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
                 </p>
               ) : null}
               <div className="stack" style={{ gap: 8, marginTop: 10 }}>
-                {names.map((name) => {
+                {names.map((name, i) => {
                   const finding = r.panel.sources[name];
-                  const reading = r.outcome.readings?.[name];
+                  const status = statuses[i];
+                  const { lead, says } = sourceStatusParts(m, status);
                   return (
-                    <div key={name} className="spread" style={{ flexWrap: "wrap", gap: 6 }}>
-                      <div style={{ minWidth: 0 }}>
+                    <div key={name} className="spread" style={{ flexWrap: "wrap", gap: 6, alignItems: "flex-start" }}>
+                      <div style={{ minWidth: 0, flex: "1 1 240px" }}>
                         <p className="small" style={{ fontWeight: 600 }}>{sourceName(name)}</p>
+                        <p className="fine">
+                          {says ? (
+                            <>{lead}{" "}<b className={says === "YES" ? "side-yes" : "side-no"}>says {says === "YES" ? "Yes" : "No"}</b>.</>
+                          ) : lead}
+                        </p>
                         {finding?.anomaly ? <p className="fine">{sentence(finding.anomaly)}</p> : null}
                         {finding?.quote ? (
                           <p className="fine" style={{ fontStyle: "italic" }}>“{finding.quote}”</p>
                         ) : null}
                       </div>
-                      <span className="reading">
-                        {reading?.covered ? readingText(reading.value_x100, m.unit) : "did not cover the date"}
-                      </span>
+                      <span className="reading">{sourceStatusShort(m, status)}</span>
                     </div>
                   );
                 })}
               </div>
               <div className="divider" />
               <p className="small">
-                {r.outcome.kind === "VERDICT" ? (
-                  <><b>{verdictLabel(r.outcome.verdict)}</b>. Derived in code from the agreed readings.</>
-                ) : (
-                  <><b>No verdict this round.</b> {sentence(r.outcome.reason)} The round is recorded and the market stays resolvable.</>
-                )}
+                <b>{why.title}.</b> {why.detail}
               </p>
               {showRaw ? (
                 <div className="panel" style={{ marginTop: 10, background: "var(--ground)" }}>

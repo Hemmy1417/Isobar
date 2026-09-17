@@ -4,7 +4,8 @@ import { describe, expect, it } from "vitest";
 import { formatGen, parseGen } from "../lib/config";
 import {
   formatDocDate, marketNumber, marketQuestion, multiplierText, phaseLabel,
-  readingText, sentence, thresholdText, ticketNumber, verdictLabel,
+  readingText, roundExplanation, sentence, sourceStatus, sourceStatusShort, sourceStatusText,
+  thresholdText, ticketNumber, verdictLabel, verdictSummary,
 } from "../lib/present";
 
 describe("the question a market asks", () => {
@@ -50,6 +51,71 @@ describe("values and identifiers", () => {
   it("multipliers and sentences", () => {
     expect(multiplierText(324)).toBe("3.24×");
     expect(sentence("the appeal window has closed")).toBe("The appeal window has closed.");
+  });
+});
+
+describe("what a round's evidence means", () => {
+  // The proving ground's Colón day: Open-Meteo 5.22 m/s, NASA POWER 3.84 m/s.
+  const at = (threshold_x100: number, comparison = "GTE") => ({ comparison, threshold_x100, unit: "m/s" });
+  const ok = (value_x100: number) => ({ covered: true, value_x100 });
+
+  it("each source answers the question on its own, both comparisons, boundaries included", () => {
+    expect(sourceStatus(at(500), ok(522))).toEqual({ kind: "reading", x100: 522, says: "YES" });
+    expect(sourceStatus(at(500), ok(384))).toEqual({ kind: "reading", x100: 384, says: "NO" });
+    expect(sourceStatus(at(522), ok(522))).toMatchObject({ says: "YES" });
+    expect(sourceStatus(at(500, "LT"), ok(384))).toMatchObject({ says: "YES" });
+    expect(sourceStatus(at(384, "LT"), ok(384))).toMatchObject({ says: "NO" });
+  });
+
+  it("tells a missing value, an unreachable source and a rejected reading apart", () => {
+    expect(sourceStatus(at(500), { covered: false, value_x100: null }, { fetched: true })).toEqual({ kind: "no-value" });
+    expect(sourceStatus(at(500), { covered: false, value_x100: null }, { fetched: false })).toEqual({ kind: "unreachable" });
+    expect(sourceStatus(at(500), { covered: false, value_x100: 384 })).toEqual({ kind: "not-accepted", x100: 384 });
+    expect(sourceStatus(at(500), undefined)).toEqual({ kind: "no-value" });
+  });
+
+  it("says why, in sentences a person can check against the numbers", () => {
+    expect(sourceStatusText(at(500), sourceStatus(at(500), ok(522))))
+      .toBe("5.22 m/s is at or above 5 m/s, so this source says Yes.");
+    expect(sourceStatusText(at(500), sourceStatus(at(500), ok(384))))
+      .toBe("3.84 m/s is under 5 m/s, so this source says No.");
+    expect(sourceStatusText(at(500), { kind: "unreachable" })).toBe("The source did not answer.");
+    expect(sourceStatusShort(at(500), { kind: "not-accepted", x100: 384 })).toBe("3.84 m/s, not accepted");
+  });
+
+  it("explains a conflict, the void band and the refund", () => {
+    const statuses = [sourceStatus(at(500), ok(522)), sourceStatus(at(500), ok(384))];
+    expect(roundExplanation(at(500), { kind: "RESOLUTION", outcome: { kind: "VERDICT", verdict: "VOID_CONFLICT" } }, statuses))
+      .toEqual({
+        title: "Void, sources disagreed",
+        detail: "One source says Yes and the other says No, so nobody settles and every stake is refunded. "
+          + "On these readings, any threshold above 3.84 m/s and up to 5.22 m/s would void.",
+      });
+  });
+
+  it("explains agreement, a retry and both appeal outcomes", () => {
+    const both = [sourceStatus(at(300), ok(522)), sourceStatus(at(300), ok(384))];
+    expect(roundExplanation(at(300), { kind: "RESOLUTION", outcome: { kind: "VERDICT", verdict: "YES" } }, both).detail)
+      .toBe("Both sources say Yes, so the verdict is Yes. Derived in code from the agreed readings.");
+    const one = [sourceStatus(at(300), ok(462)), { kind: "no-value" } as const];
+    expect(roundExplanation(at(300), { kind: "RESOLUTION", outcome: { kind: "RETRY", verdict: null } }, one).detail)
+      .toMatch(/^Only one source had a usable value for the date, and a verdict needs both/);
+    expect(roundExplanation(at(300), { kind: "RESOLUTION", outcome: { kind: "RETRY", verdict: null } }, both).detail)
+      .toMatch(/^Both sources had values, but the data check judged them not trustworthy/);
+    expect(roundExplanation(at(300), { kind: "APPEAL", outcome: { kind: "VERDICT", verdict: "YES" } }, both).title)
+      .toBe("Upheld on appeal: Yes, threshold met");
+    expect(roundExplanation(at(300), { kind: "APPEAL", outcome: { kind: "RETRY", verdict: null } }, one).title)
+      .toBe("Voided on appeal");
+  });
+
+  it("summarizes a standing verdict, including one voided or upheld on appeal", () => {
+    expect(verdictSummary({ verdict: null, appeal: null })).toBeNull();
+    expect(verdictSummary({ verdict: "VOID_CONFLICT", appeal: null })?.sentence)
+      .toBe("One source says Yes and the other says No, so nobody settles and every stake is refunded.");
+    expect(verdictSummary({ verdict: "YES", appeal: { prior_verdict: "YES", final_verdict: "YES" } }))
+      .toEqual({ title: "Yes, threshold met", sentence: "Both sources say Yes. Upheld on appeal." });
+    expect(verdictSummary({ verdict: "VOID_CONFLICT", appeal: { prior_verdict: "YES", final_verdict: "VOID_CONFLICT" } })?.title)
+      .toBe("Voided on appeal");
   });
 });
 

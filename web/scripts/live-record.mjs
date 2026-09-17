@@ -135,6 +135,7 @@ if (cmd === "status") {
   await write(buyerClient, "appeal", ["mk-000006", "premature"],
               { expectError: "needs a standing verdict" });
   const before = BigInt((await read("get_balance", [BUYER.address])).claimable);
+  const reserveBefore = (await read("get_stats")).reserve_wei;
   await write(buyerClient, "stake", ["mk-999999", "YES"], { value: GEN / 50n });
   await write(buyerClient, "seed_reserve", [], { value: GEN / 100n });
   const bal = await read("get_balance", [BUYER.address]);
@@ -142,7 +143,7 @@ if (cmd === "status") {
   assert(credited === GEN / 50n + GEN / 100n,
          `both refused payables credited back (${credited} wei claimable)`);
   const stats = await read("get_stats");
-  assert(stats.reserve_wei === "5000000000000000000",
+  assert(stats.reserve_wei === reserveBefore,
          "the stranger's value never reached the reserve");
   say("WALLS COMPLETE");
 } else {

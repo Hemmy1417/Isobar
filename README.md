@@ -146,6 +146,21 @@ with a certain-YES control (Panama ≥ 5 °C), a certain-NO control (Rotterdam
 wind ≥ 60 m/s) and open questions across the catalog, resolving on their
 honest lags over the following days.
 
+### Walls on the deployment of record (17 Sep 2026)
+
+Calendar-free negative controls sent for real against `0x169cE1cD…9375`
+(`node web/scripts/live-record.mjs walls`), all FINALIZED under `MAJORITY_AGREE`:
+
+| wall | asserted | tx |
+|---|---|---|
+| early resolve refused | `[EXPECTED] the market resolves after its sources can cover 2026-09-17 (4 day lag)` | `0x09b2fbd0d46c5b0162b6d90a236701b4b358f4d0d87ee09797a7695ce9248911` |
+| premature appeal refused | `[EXPECTED] an appeal needs a standing verdict` | `0x56ed1b4a8082fedf4a66fed6893b275b8f63d09219b8a610895727bee98253ac` |
+| stake on an unknown market | returned as refused; 0.02 GEN credited back to the sender | `0x47ef4c2bdb11712fbaafe58412d873b3c268d2e05ad2f3bcd546b2f1ce6180ad` |
+| stranger seeds the reserve | returned as refused; 0.01 GEN credited back, reserve unchanged at 5.1 GEN | `0x62cec11951ff65833826233e210f89cd0aaee8101d5b7721ee02e64f05efc724` |
+
+The two payable refusals are the rules-1 fund-stranding fix, proven on the
+pristine contract: 0.03 GEN claimable back, none of it absorbed.
+
 ## The evidence model, measured before it was coded
 
 Receipts in [docs/PROBE-REPORT.md](docs/PROBE-REPORT.md): source latencies

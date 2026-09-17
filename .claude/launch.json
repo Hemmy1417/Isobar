@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "frontend",
       "port": 3132
+    },
+    {
+      "name": "isobar-proving-ground",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "cross-env", "NEXT_PUBLIC_CONTRACT_ADDRESS=0xFF60C795c1e449e7DA99dd1b7726e064ba426CE2", "next", "dev", "-p", "3137"],
+      "cwd": "frontend",
+      "port": 3137
     }
   ]
 }

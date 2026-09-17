@@ -40,9 +40,11 @@ majority decides, so one flaky node cannot veto and one lying leader
 cannot pass.
 
 *Lean on the panel.* The panel's only compared outputs are per-source
-covered flags and one sufficiency bit; each depends on a quote grounded in
-the fetched payload, and an ungrounded claim is downgraded in code before
-derivation. There is no confidence score, no severity, no field outside
+covered flags and one sufficiency bit. A "covered" flag needs a quote the
+contract can find in the fetched payload (letters and digits only, a loose
+check), and an ungrounded claim is downgraded in code before derivation. A
+reading also needs the parser's approval, so the panel can stop a verdict
+but never create one. There is no confidence score, no severity, no field outside
 equivalence that money reads.
 
 ## A losing party
@@ -83,8 +85,11 @@ if resolution never lands.
 
 - Both global-lane sources are reanalyses; a shared systematic error would
   agree confidently. Mitigated by choosing different lineages (ERA5 vs
-  MERRA-2) and a station lane where real observations exist; not
-  eliminated.
+  NASA's GEOS-IT, per POWER's own response header) and a station lane where
+  real observations exist; not eliminated.
+- NASA POWER is requested without `time-standard=UTC`, so it reports the
+  local solar day while markets are UTC days. Near a threshold this can
+  change an outcome. The next ruleset requests UTC.
 - The catalog is fixed at deploy; a bad coordinate would need a new
   deployment. Deliberate: an editable catalog would be a steering surface.
 - Demo parlay pricing is not risk-priced; the reserve cap and stake caps

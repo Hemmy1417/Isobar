@@ -74,11 +74,11 @@ export default function Landing() {
           <p className="eyebrow">Consensus</p>
           <h3 style={{ marginTop: 8 }}>No oracle operator</h3>
           <p className="small muted" style={{ marginTop: 8 }}>
-            Nobody posts the answer. Every validator fetches the sources itself and audits
-            them: a real reading for that date, or a null, a fill value, the wrong day? Each
-            judgment must quote the fetched data, and the AI never sees the threshold or the
-            pools. Validators must agree on the evidence, the judgment and the code-derived
-            verdict. If the sources split, nobody settles and every stake is refunded.
+            Nobody posts the answer. Every validator fetches the sources itself. Code refuses
+            nulls, fill values and missing days, and an AI check looks for what code does not,
+            such as a payload for the wrong day or an impossible value. The AI never sees the
+            threshold or the pools, so it can stop a verdict but never pick a side. Validators
+            must agree on all of it; if the sources split, every stake is refunded.
           </p>
         </div>
         <div className="card">

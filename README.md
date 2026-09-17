@@ -48,18 +48,21 @@ the number deserves to move money is.
 
 Weather "truth" is plural. Two reputable datasets disagree at the margin,
 stations go dark mid-window, archives return a null, a -999 fill value or
-the wrong day, agencies revise readings. A price-feed oracle cannot
-adjudicate that; a centralized backend must be trusted not to lean on it.
-Here the money question is answered *inside consensus*:
+the wrong day, agencies revise readings. Someone has to decide whether a
+reading is good enough to settle on, and in most designs that someone is an
+oracle operator or a backend you trust. Here that decision is made *inside
+consensus*:
 
 - **Every validator fetches both sources itself.** Two independent public
   data sources (different organizations, different data lineages) whose URLs
   the contract builds from its catalog. No party supplies evidence, and a
   leader cannot record a page no other node saw.
-- **Every validator audits the data itself.** An AI panel judges each
-  payload (does it truly cover the date? any anomaly? trustworthy enough to
-  settle on?), every "covered" judgment must quote the fetched bytes, and the
-  panel is never told the threshold, the sides or the pools.
+- **Every validator checks the data itself.** Code extracts each reading and
+  refuses nulls, fill values and missing days. An AI panel then reviews the
+  same payloads for what the parsers do not check, such as a payload for the
+  wrong day or an impossible value, and judges whether they are trustworthy
+  enough to settle on. It is never told the threshold, the sides or the
+  pools, so it can stop a verdict but never pick a side.
 - **Validators agree on consequence.** The recorded readings, the coverage
   and sufficiency judgments, and the verdict pure code derives from them must
   all match, or nothing is recorded. The payout math reads only agreed,
@@ -69,8 +72,14 @@ Here the money question is answered *inside consensus*:
   direction. One appeal re-reads the recorded evidence, never a fresh fetch,
   before any money moves.
 
-The same machinery goes where a numeric oracle cannot follow: v2's **event
-markets**, settled from the official notices of port authorities, canal
+**What v1 proves, stated plainly.** v1's questions are numbers from
+structured APIs, so most of these checks are deterministic code and the AI
+review is a second line of defence, not the core. What GenLayer carries
+today is that fetching, checking, agreeing on the recorded evidence and
+disputing it all happen inside the contract that holds the money, with no
+oracle operator in between. The part that needs judgment under consensus,
+reading evidence that code cannot parse, is what v2's **event markets** are
+for: settled from the official notices of port authorities, canal
 authorities and coast guards (*was my port closed on 3 Oct?*). See the
 [roadmap](#roadmap-v2).
 
@@ -89,9 +98,10 @@ authorities and coast guards (*was my port closed on 3 Oct?*). See the
   bytes, a fetched row with an empty excerpt refused outright. A leader
   cannot store a page no other node ever saw.
 - **The panel never touches money.** It judges data quality only (it is
-  never told the threshold, the sides, or the pools), and each judgment
-  needs a verbatim quote from the payload it judges. Insufficient data
-  blocks *both* verdicts.
+  never told the threshold, the sides, or the pools). A "covered" finding
+  must cite a quote the contract can find in that source's payload, or it is
+  downgraded; that check is loose today (see honest limits). Insufficient
+  data blocks *both* verdicts.
 - **One appeal, against the record.** A wallet with money at stake may force
   one fresh round that re-reads the recorded snapshot with zero refetches, so
   the appellant argues against the same bytes the first panel saw. It can
@@ -293,6 +303,23 @@ redeploy. CI allows exactly that finding and fails on any other.
   different evidence bar; see the v2 roadmap below).
 - Reanalysis datasets genuinely disagree sometimes; the split rule **voids
   instead of guessing**, and single-source days never settle.
+- **NASA POWER answers for the local solar day.** The contract requests NASA
+  POWER without asking for UTC, so its daily value covers the local solar
+  day while markets are defined on the UTC day. The two can differ (Colón,
+  10 Sep 2026: 3.71 m/s local solar, 3.90 m/s UTC; on 11 Sep both read
+  3.84). Near a threshold this can change an outcome, turning a void into a
+  verdict or the reverse. For the recent dates Isobar settles on, POWER's
+  response header names NASA's GEOS-IT as its source. The next ruleset
+  requests UTC; the deployment of record keeps its byte-verified code.
+- **The panel's quote check is loose.** A "covered" finding needs a quote
+  whose letters and digits appear in the payload; punctuation and spacing
+  are ignored, so a trivial quote passes. A reading still needs the parser's
+  approval, so a weak quote cannot settle a missing value, but the quote is
+  not yet meaningful evidence on its own. The next ruleset requires the date
+  and the reading in the quote.
+- **The appeal panel sees the recorded payloads, not the recorded readings.**
+  It re-judges coverage and sufficiency rather than re-checking the
+  extraction, so it can uphold or void a verdict but never flip Yes and No.
 - Parlay multipliers are **flat demo pricing**, not market odds, labeled on
   every surface; the reserve is deployer-seeded protocol capital, disclosed,
   taking no third-party deposits.
@@ -337,6 +364,11 @@ can answer it.
 
 ### Also on the list
 
+- **Rules-3 evidence fixes:** NASA POWER requested in UTC; date and range
+  checks in code; quotes that must contain the date and the reading; the
+  recorded readings shown to the appeal panel; fetched text defused like
+  appeal grounds; and the sources' quality metadata (NWS quality flags, the
+  POWER header) kept for the panel to judge.
 - **Base rates on every market:** how often the threshold was crossed at
   that station on recent days, computed in the browser from public
   archives, so positions are priced from evidence.

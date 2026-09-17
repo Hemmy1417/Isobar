@@ -12,6 +12,25 @@ export const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ||
 
 export const CONTRACT_CONFIGURED = CONTRACT_ADDRESS.length === 42;
 
+/**
+ * The disposable the resolved scenes ran on (16 Sep 2026): isobar-rules-1
+ * with its date gates opened. Resolution, appeal and settlement code is the
+ * same as the record's; rules-2 changed only how refused payments return.
+ */
+export const PROVING_GROUND = "0xFF60C795c1e449e7DA99dd1b7726e064ba426CE2";
+
+/** Where the live markets are, for pages served from any other deployment. */
+export const LIVE_APP_URL = "https://iso-bar.vercel.app";
+
+export type DeploymentKind = "record" | "proving-ground" | "other";
+
+export function deploymentKind(address: string): DeploymentKind {
+  const a = address.toLowerCase();
+  if (a === DEPLOYMENT_OF_RECORD.toLowerCase()) return "record";
+  if (a === PROVING_GROUND.toLowerCase()) return "proving-ground";
+  return "other";
+}
+
 export const APP_NAME = "Isobar";
 
 const GEN = 10n ** 18n;

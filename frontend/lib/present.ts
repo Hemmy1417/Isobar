@@ -97,7 +97,7 @@ export const laneText = (l: string) => lookup(LANE, l);
 /** The evidence hosts, by the names a person knows them by. */
 const SOURCE_NAME: Record<string, string> = {
   "open-meteo": "Open-Meteo (ERA5 reanalysis)",
-  "nasa-power": "NASA POWER (MERRA-2 reanalysis)",
+  "nasa-power": "NASA POWER (GEOS-IT)",
   "nws": "US National Weather Service station",
 };
 export const sourceName = (s: string) => lookup(SOURCE_NAME, s);

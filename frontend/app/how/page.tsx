@@ -45,8 +45,8 @@ export default function HowPage() {
         <h3>3 · Evidence: two independent sources, fetched by every validator</h3>
         <p className="small muted" style={{ marginTop: 8 }}>
           The contract builds both evidence URLs in code. Worldwide, that is Open-Meteo (the
-          ERA5 reanalysis) and NASA POWER (the MERRA-2 reanalysis): different organizations,
-          different data lineages. At four US ports a fast lane reads the National Weather
+          ERA5 reanalysis) and NASA POWER (NASA&apos;s GEOS-IT model data): different
+          organizations, different data lineages. At four US ports a fast lane reads the National Weather
           Service station itself alongside Open-Meteo. Reanalysis data trails the calendar, so
           each market states when it becomes resolvable: about two days after the date on the
           fast lane, about five on the global lane.
@@ -62,11 +62,13 @@ export default function HowPage() {
       <section className="card">
         <h3>4 · The panel judges data quality; code derives the verdict</h3>
         <p className="small muted" style={{ marginTop: 8 }}>
-          The AI panel answers narrow questions: does each payload truly cover the date, is
-          anything anomalous, and is the data trustworthy enough to settle on? Each claim is
-          backed by a quote that must appear verbatim in the fetched payload. The panel never
-          sees the threshold, the sides, or the pools. Deterministic contract code then
-          derives the verdict from the agreed readings:
+          Code first extracts each reading and refuses nulls, fill values and missing days.
+          The AI panel then answers narrow questions about the same payloads: does each one
+          truly cover the date, is anything anomalous, and is the data trustworthy enough to
+          settle on? A &quot;covered&quot; answer must cite a quote the contract can find in that
+          payload. The panel never sees the threshold, the sides, or the pools, so it can stop
+          a verdict but never pick a side. Deterministic contract code then derives the
+          verdict from the agreed readings:
         </p>
         <ul className="small muted" style={{ margin: "8px 0 0", paddingLeft: 20, lineHeight: 1.8 }}>
           <li>both sources over the threshold → <b>Yes</b>; both under → <b>No</b>;</li>

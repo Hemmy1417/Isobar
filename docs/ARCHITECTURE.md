@@ -51,10 +51,12 @@ secret, so sources that need one were never candidates.
    a digest that covers exactly the stored excerpt, no empty excerpt behind
    `fetched`. Any mismatch prints a `[DISAGREE]` reason and fails the round.
 4. The panel (an LLM prompt run by each node) judges data quality per
-   source (covered, anomaly, a verbatim grounding quote) plus one
-   sufficiency bit. Validators compare **consequences only** (the covered
-   flags and the sufficiency bit), never wording; an ungrounded "covered"
-   is downgraded in code before it can matter.
+   source (covered, anomaly, a grounding quote) plus one sufficiency bit.
+   Validators compare **consequences only** (the covered flags and the
+   sufficiency bit), never wording; a "covered" whose quote's letters and
+   digits do not appear in the payload is downgraded in code before it can
+   matter. That check ignores punctuation and spacing, so it is loose
+   (README, honest limits).
 5. `_derive`, pure code, maps agreed readings to
    YES / NO / VOID_CONFLICT / RETRY. The round record (snapshot, panel
    findings, outcome) is written once agreed and is what any appeal re-reads.

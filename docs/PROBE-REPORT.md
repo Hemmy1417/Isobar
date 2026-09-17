@@ -12,12 +12,19 @@ Direct requests to the three evidence APIs, asking for recent days:
 | source | asked | answered | conclusion |
 |---|---|---|---|
 | Open-Meteo archive (ERA5T) | 8 to 15 Sep | values through **15 Sep** (yesterday) | ~1-day lag |
-| NASA POWER (MERRA-2) | 1 to 15 Sep | values through **13 Sep**, `-999.0` for 14/15 | ~3-day lag, `-999` fill |
+| NASA POWER (GEOS-IT for these dates) | 1 to 15 Sep | values through **13 Sep**, `-999.0` for 14/15 | ~3-day lag, `-999` fill |
 | NWS station obs (KEWR) | latest | observations minutes old, `windSpeed` in km/h | real-time; convert units in code |
 
 These numbers set the contract's lanes: `resolve_after = window date + 1 +
 lag` with lag 1 (fast lane) / 4 (global lane), and the `-999` fill parses
 as *not covered*, never as a reading.
+
+*Added 17 Sep, after an audit:* POWER's response header for these dates
+reads `"sources": ["GEOSIT", "POWER"]` and `"time_standard": "LST"`. The
+contract's URL does not request `time-standard=UTC`, so POWER's daily values
+cover the local solar day, not the UTC day a market names (Colón, 10 Sep:
+3.71 m/s local solar vs 3.90 m/s UTC; 11 Sep: 3.84 both ways). See the
+README's honest limits.
 
 ## The runner (16 Sep 2026)
 

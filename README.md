@@ -22,6 +22,7 @@ full payout is reserved on-chain the moment it is bought.
 | | |
 |---|---|
 | Live app | [iso-bar.vercel.app](https://iso-bar.vercel.app) |
+| Proving ground app | [isobar-frontend-i1kv.vercel.app](https://isobar-frontend-i1kv.vercel.app): resolved markets on real recorded weather (a void on conflict, a Yes upheld on appeal, a No, a retry), served from the test copy described [below](#live-on-chain-the-disposable-proving-ground-16-sep-2026) |
 | Demo video | [youtu.be/qm7L5LDLtZE](https://youtu.be/qm7L5LDLtZE) (2:59) |
 | Contract | [`0x169cE1cD5aAa013adee55a4B3ed86752cc999375`](https://explorer-studio-dev.genlayer.com/address/0x169cE1cD5aAa013adee55a4B3ed86752cc999375) |
 | Network | GenLayer Studio Next (chain 61997) |
@@ -142,8 +143,15 @@ contract with four printed patches (past dates allowed; stake, ticket and
 resolve-lag gates opened, nothing else), so resolution could run against
 the real recorded weather of **11 Sep 2026 at Colón**, where the two
 reanalyses genuinely disagree: Open-Meteo 5.22 m/s, NASA POWER 3.84 m/s.
-Contract `0xFF60C795…6CE2`; every transaction FINALIZED under
+Contract `0xFF60C795…6CE2` (ruleset `isobar-rules-1`: rules-2 changed only
+how refused payments return, so resolution, appeal and settlement code is
+identical to the record's); every transaction FINALIZED under
 `MAJORITY_AGREE`; explorer: `https://explorer-studio-dev.genlayer.com/tx/<hash>`.
+
+**Browse these markets in the app** at
+[isobar-frontend-i1kv.vercel.app](https://isobar-frontend-i1kv.vercel.app): the
+same frontend pointed at this contract, with a banner on every page saying
+so. Market #2 is the void, #1 the Yes with its appeal, #4 the No, #3 the retry.
 
 | proof | asserted | tx |
 |---|---|---|
@@ -227,8 +235,11 @@ same toolchain pins, same CI jobs.
 5. **Build a parlay.** Pick a side on two to four open markets and buy; the full payout is
    reserved on chain at purchase (flat demo pricing, labeled).
 6. **Check your positions.** My positions lists every market and ticket the wallet holds.
-7. **See how verdicts are reached.** How it works, plus the proving-ground table above for
-   resolved markets: a Yes with an upheld appeal, and a void when the sources disagreed.
+7. **See how verdicts are reached.** Read How it works, then open the
+   [proving ground app](https://isobar-frontend-i1kv.vercel.app) for resolved markets on real
+   recorded weather: Market #2 voided when the sources disagreed, Market #1 settled Yes and
+   was upheld on appeal, Market #4 settled No, and Market #3 retried when NASA POWER had no
+   value yet.
 
 ### Requirements
 
@@ -267,6 +278,8 @@ node frontend/scripts/deploy.mjs verify 0x…     # byte-for-byte against contra
 **Deploying the frontend on Vercel**: import the repo, set **Root Directory** to `frontend`.
 No environment variables are required; `frontend/.env.example` lists the optional overrides
 (network and contract address; the wallet, genlayer-js and Transaction Kit share one network config).
+The proving ground app is a second project from the same repo with `NEXT_PUBLIC_CONTRACT_ADDRESS`
+set to the proving-ground contract; the app then shows a banner naming it on every page.
 
 ### Testing strategy
 

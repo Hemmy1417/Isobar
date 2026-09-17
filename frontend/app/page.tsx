@@ -72,12 +72,13 @@ export default function Landing() {
         </div>
         <div className="card">
           <p className="eyebrow">Consensus</p>
-          <h3 style={{ marginTop: 8 }}>Validators fetch, code decides</h3>
+          <h3 style={{ marginTop: 8 }}>No oracle operator</h3>
           <p className="small muted" style={{ marginTop: 8 }}>
-            Every validator fetches the sources itself and must agree on the recorded readings.
-            The AI panel judges only data quality, with quotes that must appear in the fetched
-            payload. The payout math never touches a model&apos;s opinion. If the sources
-            disagree, nobody settles: the market voids and every stake is refunded.
+            Nobody posts the answer. Every validator fetches the sources itself and audits
+            them: a real reading for that date, or a null, a fill value, the wrong day? Each
+            judgment must quote the fetched data, and the AI never sees the threshold or the
+            pools. Validators must agree on the evidence, the judgment and the code-derived
+            verdict. If the sources split, nobody settles and every stake is refunded.
           </p>
         </div>
         <div className="card">

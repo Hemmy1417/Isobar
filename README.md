@@ -2,7 +2,7 @@
 
 <h1 align="center">Isobar</h1>
 
-<p align="center">Parimutuel weather-threshold markets, adjudicated on GenLayer.<br>
+<p align="center">Parimutuel weather-threshold markets, adjudicated on GenLayer with no oracle operator.<br>
 Every validator fetches two independent public data sources itself; deterministic code derives the verdict;<br>
 one appeal re-reads the agreed record before any money moves.</p>
 
@@ -40,17 +40,39 @@ value, so the walls receipt below became a fix).
 
 ## Why GenLayer is load-bearing
 
+A forecast predicts the weather. A market has to settle what actually
+happened, with money riding on the answer, and the usual tool for that is an
+oracle: an operator reads a dataset and posts a number. Isobar has no
+operator, because posting the number is not the hard part. Deciding whether
+the number deserves to move money is.
+
 Weather "truth" is plural. Two reputable datasets disagree at the margin,
-stations go dark mid-window, agencies revise readings. A price-feed oracle
-cannot adjudicate that; a centralized backend must be trusted not to. Here
-the money question is answered *inside consensus*: validators each fetch two
-independent public data sources (different organizations, different data
-lineages), agree on the recorded evidence row by row, and judge the messy
-parts (does this payload truly cover the date? is it trustworthy enough to
-settle on?) with quotes that must appear in the fetched bytes. The payout
-math reads only agreed, validated values. When the sources split, **nobody
-settles**: the market voids and every stake is refunded, in either
-direction, because honesty about disagreement beats a guess.
+stations go dark mid-window, archives return a null, a -999 fill value or
+the wrong day, agencies revise readings. A price-feed oracle cannot
+adjudicate that; a centralized backend must be trusted not to lean on it.
+Here the money question is answered *inside consensus*:
+
+- **Every validator fetches both sources itself.** Two independent public
+  data sources (different organizations, different data lineages) whose URLs
+  the contract builds from its catalog. No party supplies evidence, and a
+  leader cannot record a page no other node saw.
+- **Every validator audits the data itself.** An AI panel judges each
+  payload (does it truly cover the date? any anomaly? trustworthy enough to
+  settle on?), every "covered" judgment must quote the fetched bytes, and the
+  panel is never told the threshold, the sides or the pools.
+- **Validators agree on consequence.** The recorded readings, the coverage
+  and sufficiency judgments, and the verdict pure code derives from them must
+  all match, or nothing is recorded. The payout math reads only agreed,
+  validated values.
+- **Disagreement is an outcome, not a guess.** When the sources split,
+  **nobody settles**: the market voids and every stake is refunded, in either
+  direction. One appeal re-reads the recorded evidence, never a fresh fetch,
+  before any money moves.
+
+The same machinery goes where a numeric oracle cannot follow: v2's **event
+markets**, settled from the official notices of port authorities, canal
+authorities and coast guards (*was my port closed on 3 Oct?*). See the
+[roadmap](#roadmap-v2).
 
 ## What the contract owns, and what it refuses to
 

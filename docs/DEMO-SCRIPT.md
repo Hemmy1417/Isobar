@@ -30,7 +30,8 @@ Point at the sources line and the dispute radar rail.
 
 ## 0:55 — Money in
 
-Connect the wallet (MetaMask pops; approve on camera). Stake on YES.
+Connect the wallet (MetaMask pops; approve on camera). If the stake panel
+says the wallet needs test GEN, click **Get 10 test GEN** first. Stake on YES.
 The review panel appears — fee receipt, queue, the works.
 
 > "Stakes are parimutuel — winners split the losing pool, the pool is
@@ -41,8 +42,19 @@ Wait for the tracker to walk to Finalized.
 
 ## 1:30 — The verdict, and who decided it
 
-Open a RESOLVED market (one of the seeded controls). Show the verdict
-banner, then the evidence panel, then toggle the verification view.
+Open a RESOLVED market. Until the deployment of record's first verdicts
+land (fast lane 19 Sep, global lane 22–23 Sep), film this scene on the
+**proving-ground contract** — the same code with only its date gates
+opened, resolved against the real recorded weather of 11 Sep at Colón:
+
+```
+cd frontend && npx cross-env NEXT_PUBLIC_CONTRACT_ADDRESS=0xFF60C795c1e449e7DA99dd1b7726e064ba426CE2 next dev -p 3136
+```
+
+Market #1 (YES, appeal upheld), #2 (void: the two reanalyses disagreed),
+#3 (retry: NASA POWER had not published). Show the verdict banner, the
+evidence panel, then toggle the verification view. Say on camera that this
+is the proving-ground deployment.
 
 > "When the day has passed, every validator fetches both agencies
 > itself. They must agree on the recorded evidence line by line —
@@ -81,7 +93,8 @@ Back to `/map`, then a beat on `/how`.
 ## Prep checklist (before recording)
 
 - [ ] Vercel live, wallet funded with test GEN, on Studio Next
-- [ ] At least one market RESOLVED or FINAL (a seeded control) to show
+- [ ] Open markets on the record to stake on (seeded 17 Sep: Panama, 7 days; Hamburg, 14 days)
+- [ ] Resolved scene: the record's own verdict if it has landed, else the proving-ground server above
 - [ ] Browser at 1280×720 or 1920×1080, bookmarks bar hidden
 - [ ] Wallet popups on the recording screen
 - [ ] One dry run off-camera (the wallet confirms add ~20s each)

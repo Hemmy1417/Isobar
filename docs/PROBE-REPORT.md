@@ -37,7 +37,7 @@ Isobar pins the working runner.
 
 ## On-chain fetch and clock (16 Sep 2026)
 
-A throwaway probe contract ([weather_probe.py](../web/scripts/probe/weather_probe.py),
+A throwaway probe contract ([weather_probe.py](../frontend/scripts/probe/weather_probe.py),
 deployed at `0x0E9B0566ed4419f1F9B2121c86A763a6D8b9E90c`) fetched all three
 APIs inside a consensus round and reported on the clock. Probe tx
 `0x93e4b777f01128dbed91e10b8bc62ec15ba9ecc476ff4409f44a283d29b3175e`,

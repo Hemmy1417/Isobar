@@ -25,6 +25,7 @@ Mocked with intent:
 
 import importlib.util
 import json
+import os
 import pathlib
 import sys
 import types
@@ -265,7 +266,29 @@ def _load():
 
 @pytest.fixture
 def module():
-    return _load()
+    # The stub SDK must not outlive its test: the official-runner suite
+    # (test_sdk_runner.py) loads the real `genlayer` in the same session.
+    saved = {k: v for k, v in sys.modules.items() if k == "genlayer" or k.startswith("genlayer.")}
+    try:
+        yield _load()
+    finally:
+        for k in [k for k in sys.modules if k == "genlayer" or k.startswith("genlayer.")]:
+            del sys.modules[k]
+        sys.modules.update(saved)
+
+
+if sys.platform == "win32":
+    # genlayer-test's direct loader unlinks a temp file it still holds open,
+    # which POSIX allows and Windows refuses; tolerate exactly that locally.
+    _real_unlink = os.unlink
+
+    def _tolerant_unlink(path, *args, **kwargs):
+        try:
+            _real_unlink(path, *args, **kwargs)
+        except PermissionError:
+            pass
+
+    os.unlink = _tolerant_unlink
 
 
 _TREES = ("markets", "market_list", "positions", "market_stakers",

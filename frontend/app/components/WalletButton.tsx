@@ -2,18 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { truncAddr } from "../../lib/chain";
+import { RPC_URL, truncAddr } from "../../lib/chain";
 import { formatGen } from "../../lib/config";
 import { getBalance } from "../../lib/read";
 import { useWallet, type Discovered } from "../../lib/wallet";
 
+/** The faucet counts in atto: this is 10 GEN, and it credits only the
+ *  checksummed address the wallet layer already provides. */
+const TEST_GEN_ATTO = "10000000000000000000";
+
 async function requestTestGen(address: string): Promise<void> {
   const res = await fetch(
-    process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || "https://studio-next.genlayer.com/api",
+    RPC_URL,
     {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "sim_fundAccount", params: [address, 500] }),
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "sim_fundAccount", params: [address, TEST_GEN_ATTO] }),
     },
   );
   const data = await res.json();

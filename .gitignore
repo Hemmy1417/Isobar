@@ -1,5 +1,7 @@
 __pycache__/
+*.pyc
 .pytest_cache/
+.venv/
 node_modules/
 .next/
 .env
@@ -8,3 +10,4 @@ node_modules/
 *.log
 .vercel
 *.tsbuildinfo
+/frontend/package-lock.json

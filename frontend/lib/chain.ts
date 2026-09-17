@@ -1,17 +1,14 @@
-/** GenLayer Studio Next, the one network this build speaks to. */
-import { studioDevnet } from "genlayer-js/chains";
+/**
+ * GenLayer Studio Next, the one network this build speaks to. The network
+ * itself resolves in ./network (env-overridable, shared by wallet, SDK and
+ * Kit); these names are what the rest of the app imports.
+ */
+import { GENLAYER_CHAIN, GENLAYER_CHAIN_ID, GENLAYER_CHAIN_ID_HEX, GENLAYER_NETWORK } from "./network";
 
-export const RPC_URL =
-  process.env.NEXT_PUBLIC_GENLAYER_RPC_URL || "https://studio-next.genlayer.com/api";
-
-export const STUDIO_NEXT = {
-  ...studioDevnet,
-  name: "GenLayer Studio Next",
-  rpcUrls: { default: { http: [RPC_URL] } },
-};
-
-export const CHAIN_ID = STUDIO_NEXT.id;
-export const CHAIN_HEX = `0x${CHAIN_ID.toString(16).toUpperCase()}`;
+export const STUDIO_NEXT = GENLAYER_CHAIN;
+export const RPC_URL = GENLAYER_CHAIN.rpcUrls.default.http[0];
+export const CHAIN_ID = GENLAYER_CHAIN_ID;
+export const CHAIN_HEX = GENLAYER_CHAIN_ID_HEX;
 
 export const EXPLORER = "https://explorer-studio-dev.genlayer.com";
 export const txUrl = (hash: string) => `${EXPLORER}/tx/${hash}`;
@@ -42,10 +39,4 @@ export function isTransient(e: unknown): boolean {
 }
 
 /** The network entry a wallet adds. */
-export const WALLET_NETWORK = {
-  chainId: CHAIN_HEX,
-  chainName: "GenLayer Studio Next",
-  nativeCurrency: { name: "GEN", symbol: "GEN", decimals: 18 },
-  rpcUrls: [RPC_URL],
-  blockExplorerUrls: [] as string[],
-};
+export const WALLET_NETWORK = GENLAYER_NETWORK;

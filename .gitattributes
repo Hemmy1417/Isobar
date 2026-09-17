@@ -1,0 +1,3 @@
+# Byte verification compares the deployed contract with contracts/isobar.py
+# byte for byte: every checkout must keep LF line endings.
+* text=auto eol=lf

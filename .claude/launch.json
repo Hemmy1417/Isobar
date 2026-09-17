@@ -5,7 +5,7 @@
       "name": "isobar-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "cwd": "web",
+      "cwd": "frontend",
       "port": 3132
     }
   ]

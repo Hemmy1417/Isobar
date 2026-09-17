@@ -5,14 +5,18 @@ no database, no worker, no secrets — the chain is the record and the
 browser reads it directly.
 
 ```
-contracts/isobar.py        the entire mechanism (isobar-rules-1)
-tests/direct/              55 tests against a runtime-strict stub; 12 mutation floors
-web/                       the pressure room (Next.js, Vercel root)
-  lib/                     chain config · typed paced reads · pure acts · vocabulary
-  lib/kit.ts               Transaction Kit bound to the CONNECTED wallet's provider
+contracts/isobar.py        the entire mechanism (isobar-rules-2)
+tests/direct/              55 tests on a runtime-strict stub + 8 on the official runner
+tests/integration/         gltest suite on Studio Next (throwaway deployments)
+tests/mutation/            14 safety floors broken in place, all caught
+frontend/                  the pressure room (Next.js, Vercel Root Directory)
+  lib/                     network config · budgeted cached reads · pure acts · vocabulary
+  lib/kit.ts               Transaction Kit bound to the CONNECTED wallet's provider;
+                           payouts priced by simulation (message allocations)
   app/                     8 routes; every act via the kit's headless flow
   scripts/                 deploy / verify / probes / disposable E2E / seed
-docs/                      probe report · this file · threat model
+deploy/deployScript.ts     `genlayer deploy` entry point (boilerplate shape)
+docs/                      probe report · this file · threat model · demo script
 ```
 
 ## On-chain vs off
@@ -23,9 +27,10 @@ evidence fetching, snapshot agreement, the panel, the derivation; every
 window (tx-datetime clock); every refusal sentence.
 
 **Off-chain (the browser only):** rendering, wallet discovery (EIP-6963),
-fee estimation and submission through Transaction Kit, paced reads (the
-gen_call bucket is 30/min per IP, so the app queues reads 2.2 s apart and
-each visitor spends their own budget — a server proxy would pool them).
+fee estimation and submission through Transaction Kit, budgeted reads (the
+gen_call bucket is 30 per rolling minute per IP: reads run concurrently up
+to 22 starts a minute, shared across tabs, cached 30 s, and each visitor
+spends their own budget — a server proxy would pool them).
 
 **Nowhere:** user accounts, private data, custody, API keys. The evidence
 APIs are public and keyless by design — a public contract cannot carry a

@@ -1,0 +1,22 @@
+networks:
+  # Isobar targets GenLayer Studio Next (Consensus v0.6, chain 61997).
+  default: studionext
+
+  studionext:
+    id: 61997
+    url: "https://studio-next.genlayer.com/api"
+    chain_type: studio_devnet
+    # A funded key for the throwaway deployments the integration suite makes.
+    # Set it in .env (gitignored); never commit it.
+    accounts:
+      - "${ISOBAR_TEST_PRIVATE_KEY}"
+    default_wait_interval: 4000
+    default_wait_retries: 150
+
+  localnet:
+    url: "http://127.0.0.1:4000/api"
+
+paths:
+  contracts: "contracts"
+
+environment: .env

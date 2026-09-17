@@ -25,7 +25,7 @@ full payout is reserved on-chain the moment it is bought.
 | Network | GenLayer Studio Next (chain 61997) |
 | Deploy tx | `0x172624caa71e7b5470eda8094a0fb5b52b74ed985ec7bd55682e597f9eb9e67c` |
 | Source | [`contracts/isobar.py`](contracts/isobar.py), ruleset `isobar-rules-2` |
-| Byte verification | `node web/scripts/deploy.mjs verify 0x169cE1cD…` → sha256 `b5ea1af9…20890f`, byte-for-byte identical |
+| Byte verification | `node frontend/scripts/deploy.mjs verify 0x169cE1cD…` → sha256 `b5ea1af9…20890f`, byte-for-byte identical |
 | Frontend stack | Next.js + **Transaction Kit 0.1.0-rc.2** (headless flow), genlayer-js 2.0.0-rc.1 |
 
 Superseded during development (probe and diagnosis only, patches disclosed
@@ -138,7 +138,7 @@ lost. Transaction Kit 0.1.0-rc.2 prices from defaults and submits without
 allocations, so the app wraps it: `claim` is priced by
 `estimateTransactionFeesForWrite` and signed with the allocations it
 measured, every other write goes through the kit unchanged
-([`web/lib/kit.ts`](web/lib/kit.ts), tested in `web/tests/kit.test.ts`).
+([`frontend/lib/kit.ts`](frontend/lib/kit.ts), tested in `frontend/tests/kit.test.ts`).
 
 The deployment of record runs
 the pristine rules on future-dated markets — its book was seeded on 16 Sep
@@ -149,7 +149,7 @@ honest lags over the following days.
 ### Walls on the deployment of record (17 Sep 2026)
 
 Calendar-free negative controls sent for real against `0x169cE1cD…9375`
-(`node web/scripts/live-record.mjs walls`), all FINALIZED under `MAJORITY_AGREE`:
+(`node frontend/scripts/live-record.mjs walls`), all FINALIZED under `MAJORITY_AGREE`:
 
 | wall | asserted | tx |
 |---|---|---|
@@ -174,28 +174,75 @@ standard-library `datetime.now` *is* the tx datetime on this runner, and
 
 ## Running it
 
+Built on the [GenLayer project boilerplate (v2-dev)](https://github.com/genlayerlabs/genlayer-project-boilerplate/tree/v2-dev):
+same layout (`contracts/`, `tests/direct`, `tests/integration`, `frontend/`, `deploy/`),
+same toolchain pins, same CI jobs.
+
+### Requirements
+
+- Python >= 3.12, Node 22
+- [GenLayer CLI](https://github.com/genlayerlabs/genlayer-cli): `npm install -g genlayer`
+- Nothing else for the app: the deployment of record and Studio Next are compiled in
+
+### Quick start
+
+```shell
+# 1. Python toolchain (genlayer-py, genlayer-test, genvm-linter — the boilerplate pins)
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# 2. Lint + validate the contract against the SDK its Depends header pins
+genvm-lint check contracts/isobar.py
+
+# 3. Direct mode tests (in-memory, no network)
+pytest tests/direct/ -v
+
+# 4. Frontend (npm workspace, from the repo root)
+npm ci
+npm run dev                  # http://localhost:3132
+npm run lint && npm test && npm run build
+
+# 5. Integration tests on Studio Next (deploys a throwaway instance)
+echo "ISOBAR_TEST_PRIVATE_KEY=0x…" >> .env      # a funded Studio Next key, gitignored
+gltest tests/integration/ -v -s
+npm run test:fees            # same run, measuring frontend/fee-profile.json (chainId 61997)
+
+# 6. Deploy your own instance
+genlayer deploy              # runs deploy/deployScript.ts
+node frontend/scripts/deploy.mjs verify 0x…     # byte-for-byte against contracts/isobar.py
 ```
-# contract tests: 55 direct, mocks as strict as the runtime
-python -m pytest tests/direct -q
 
-# every floor mutation-checked: 14/14 killed
-python <scratch>/mutate.py
+**Deploying the frontend on Vercel**: import the repo, set **Root Directory** to `frontend`.
+No environment variables are required; `frontend/.env.example` lists the optional overrides
+(network and contract address — the wallet, genlayer-js and Transaction Kit share one network config).
 
-# web: typecheck, 34 unit tests, production build
-cd web && npm ci && npx tsc --noEmit && npx vitest run && npx next build
+### Testing strategy
 
-# dev server against the deployment of record
-cd web && npm run dev     # http://localhost:3132
-```
+| layer | command | what it proves | count |
+|---|---|---|---|
+| **Lint** | `genvm-lint check contracts/isobar.py` | SDK validation passes (23 methods); lint clean apart from one documented finding (below) | — |
+| **Direct, stub harness** | `pytest tests/direct/` | lifecycle, consensus refusals (forged snapshots, self-digests, empty excerpts, split readings), appeal, parlay, walls, wei conservation with dust — every validator runs on every call | 55 |
+| **Direct, official runner** | `pytest tests/direct/test_sdk_runner.py` | the same mechanism on the real SDK (`direct_vm`): YES round, validator agree / disagree, forged leader refused, void refunds, retry, payable refusal credited, claim, checksummed-signer keys | 8 |
+| **Mutation sweep** | `python tests/mutation/mutate.py` | every safety floor broken in place is caught; restore-control passes | 14/14 killed |
+| **Frontend** | `npm test` | acts availability at every boundary, vocabulary, read budget, refusal decoding, kit wiring + payout allocations, network config, pinned releases, checksummed accounts, transaction panel finality, deploy script | 62 |
+| **Integration** | `gltest tests/integration/` | on Studio Next: deploy, catalog, market + stake, refusal walls, refused payable credited back, real-GEN claim with message allocations | 4 |
+| **Live proofs** | `node frontend/scripts/live-record.mjs` | the tables above, on the deployment of record and the disposable | scripted assertions |
 
-## Tests
+**Fee profile — measured, and deliberately not wired.** `npm run test:fees` measures a
+gltest profile on Studio Next (chainId 61997). Priced exactly the way Transaction Kit applies
+a developer profile, those allocations **failed live**: `create_market` and `stake` both
+finalized with the leader refusing `out_of receipt message`
+(`0x9b949022823d452d3a22a402b6bd04ab5b36481cf4b8642a8688561c9297748b`,
+`0xc2035db18df5a67e90df79018f226c4e436cc3e740e05a16181529dcfee2a53a`, on the disposable).
+The measured budgets cover execution but underfund receipts. The app therefore passes a profile
+that names chain 61997 with no method entries, so the kit sizes every write from live network
+defaults — the path every in-app and scripted write on this deployment has used. `claim` is
+additionally priced by simulation for its message allocations.
 
-| suite | scope | count |
-|---|---|---|
-| `tests/direct` | lifecycle, consensus refusals (forged snapshots, self-digests, empty excerpts, split readings), appeal, parlay, walls, wei conservation with dust | 55 |
-| mutation sweep | every floor broken in place, suite must fail, restore-control | 14/14 killed |
-| `web/tests` | the acts availability function at every status × role × clock boundary; the vocabulary layer; signed writes bound to the selected wallet; payouts carrying simulated message allocations | 34 |
-| disposable E2E | the table above, against live APIs on Studio Next | scripted assertions |
+**The one lint finding.** `genvm-lint check` (v0.11-dev) reports E022 — "method must have
+`self`" — on the `@staticmethod` helper `_snapshot_agrees`. It is valid Python that already runs
+inside live consensus rounds; changing it would change the byte-verified contract and require a
+redeploy. CI allows exactly that finding and fails on any other.
 
 ## Honest limits
 

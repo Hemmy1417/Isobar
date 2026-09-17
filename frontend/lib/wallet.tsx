@@ -8,6 +8,7 @@
  * multi-wallet browser signs with the wallet the person actually chose.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { getAddress } from "viem";
 
 import { CHAIN_HEX, STUDIO_NEXT, WALLET_NETWORK } from "./chain";
 
@@ -41,6 +42,21 @@ export function useWallet(): WalletState {
   const v = useContext(Ctx);
   if (!v) throw new Error("useWallet used outside WalletProvider");
   return v;
+}
+
+/**
+ * The account as the contract records it. The contract keys positions,
+ * balances and "my markets" by the signer's EIP-55 checksummed address and
+ * its views look them up by exact string; wallets commonly report
+ * lowercase, which would read every record as empty. The faucet credits
+ * only checksummed addresses too. Anything unparseable is no account.
+ */
+export function accountOf(raw: unknown): string {
+  try {
+    return typeof raw === "string" ? getAddress(raw) : "";
+  } catch {
+    return "";
+  }
 }
 
 function isUnknownChain(err: unknown): boolean {
@@ -93,13 +109,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const adopt = useCallback((d: Discovered, addr: string) => {
     setSelected(d);
-    setAddress(addr);
+    setAddress(accountOf(addr));
     const onAccounts = (accounts: unknown) => {
       const list = accounts as string[];
       if (!list?.length) {
         setSelected(null);
         setAddress("");
-      } else setAddress(list[0]);
+      } else setAddress(accountOf(list[0]));
     };
     const onChain = (chainId: unknown) => setChainOk(String(chainId).toLowerCase() === CHAIN_HEX.toLowerCase());
     d.provider.removeListener?.("accountsChanged", onAccounts);

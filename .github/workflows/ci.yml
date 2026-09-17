@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-contracts:
+    name: Lint Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: genvm-lint check (lint + SDK validation)
+        # The deployed, byte-verified contract predates linter rule E022
+        # ("method must have self"), which flags one @staticmethod helper
+        # that already runs inside live consensus rounds. Changing it means
+        # a redeploy, so exactly that finding is allowed; any other lint
+        # finding, or a validation failure, fails the job.
+        run: |
+          genvm-lint check contracts/isobar.py --json > lint.json || true
+          cat lint.json
+          python - <<'EOF'
+          import json, sys
+          r = json.load(open("lint.json"))
+          allowed = {("E022", "Method '_snapshot_agrees' must have 'self' as first parameter")}
+          findings = r["lint"].get("warnings", []) + r["lint"].get("errors", [])
+          unexpected = [f for f in findings if (f["code"], f["msg"]) not in allowed]
+          if not r["validate"]["ok"]:
+              sys.exit(f"validation failed: {r['validate']}")
+          if unexpected:
+              sys.exit(f"unexpected lint findings: {unexpected}")
+          print(f"validate ok ({r['validate']['methods']} methods); lint ok apart from the documented E022")
+          EOF
+
+  test-direct:
+    name: Direct Mode Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pytest tests/direct/ -v

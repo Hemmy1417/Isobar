@@ -51,7 +51,7 @@ export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, confirmText
   useEffect(() => {
     if (state.step === "done" && !doneFired.current) {
       doneFired.current = true;
-      onDone?.(state.status.successful !== false);
+      onDone?.(state.status.phase === "finalized" && state.status.successful !== false);
     }
   }, [state, onDone]);
 
@@ -129,7 +129,12 @@ export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, confirmText
   const outcome = done && status
     ? describeOutcome(status.statusName, status.executionResultName)
     : null;
-  const succeeded = done && status?.successful !== false;
+  // "Confirmed" is earned only by a FINALIZED transaction that executed
+  // successfully: an accepted-but-unfinalized write can still be appealed
+  // away, so it is never presented as settled.
+  const finalized = status?.phase === "finalized";
+  const succeeded = done && finalized && status?.successful !== false;
+  const awaitingFinality = done && !finalized && status?.successful !== false;
 
   return (
     <div className="panel">
@@ -156,6 +161,13 @@ export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, confirmText
                 <a href={txUrl(status.genlayerTxId)} target="_blank" rel="noreferrer">View the transaction</a>
               </>
             ) : null}
+          </div>
+        ) : awaitingFinality ? (
+          <div className="notice notice-warn">
+            <b>Decided, not yet final</b>
+            <p className="fine" style={{ color: "inherit", marginTop: 4 }}>
+              Validators accepted the transaction, but it can still be appealed until it finalizes.
+            </p>
           </div>
         ) : (
           <div className="notice notice-warn">

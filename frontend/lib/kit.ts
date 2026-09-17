@@ -16,7 +16,7 @@ import { createClient } from "genlayer-js";
 import { useMemo } from "react";
 
 import { STUDIO_NEXT } from "./chain";
-import feeProfile from "./fee-profile.json";
+import feeProfile from "../fee-profile.json";
 import { useWallet } from "./wallet";
 
 /**

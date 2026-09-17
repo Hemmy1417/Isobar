@@ -54,7 +54,8 @@ describe("the transaction panel", () => {
     render(<TxPanel kit={finalizingKit()} tx={stakeTx} onDone={onDone} />);
     await approve();
     expect(await screen.findByText(/Confirmed: finalized on chain/)).toBeTruthy();
-    expect(onDone).toHaveBeenCalledWith(true);
+    // onDone fires from an effect after the outcome renders, so wait for it.
+    await waitFor(() => expect(onDone).toHaveBeenCalledWith(true));
   });
 
   it("keeps the outcome on screen until the person closes it", async () => {
@@ -75,7 +76,7 @@ describe("the transaction panel", () => {
     await approve();
     expect(await screen.findByText("Decided, not yet final")).toBeTruthy();
     expect(screen.queryByText(/Confirmed/)).toBeNull();
-    expect(onDone).toHaveBeenCalledWith(false);
+    await waitFor(() => expect(onDone).toHaveBeenCalledWith(false));
   });
 
   it("reports a finalized refusal as a failure, not a success", async () => {

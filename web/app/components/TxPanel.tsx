@@ -15,7 +15,7 @@ import {
   type SubmitInput,
   type TransactionKit,
 } from "@genlayer/transaction-kit-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { txUrl } from "../../lib/chain";
 
@@ -28,13 +28,22 @@ const PHASE_TEXT: Record<string, string> = {
   finalized: "Finalized",
 };
 
-export function TxPanel({ kit, tx, value, onDone, confirmText }: {
+/**
+ * One panel is one review of one transaction: the transaction, its value
+ * and its label are frozen when the panel opens. Edits to the form behind
+ * it, or a parent re-render building a new object, can neither re-price
+ * the quote mid-review nor change what gets signed.
+ */
+export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, confirmText: confirmProp }: {
   kit: TransactionKit;
   tx: SubmitInput;
   value?: bigint;
   onDone?: (successful: boolean) => void;
   confirmText?: string;
 }) {
+  const [tx] = useState(txProp);
+  const [value] = useState(valueProp);
+  const [confirmText] = useState(confirmProp);
   const flow = useTransactionFlow({ kit, tx, userValue: value, trackUntil: "finalized" });
   const { state } = flow;
   const doneFired = useRef(false);

@@ -3,11 +3,12 @@
  * callers get parsed objects, null for absent records, or a ReadError a
  * person can act on.
  *
- * Reads go straight from this browser to Studio Next, PACED: gen_call
- * shares a 30-per-minute bucket per IP (measured on a sibling build,
- * 14 Sep), and the wallet's fee estimates spend from the same bucket. A
- * queue holds each read until the pace allows it, retries transient
- * failures, and caches what cannot change.
+ * Reads go straight from this browser to Studio Next, BUDGETED: gen_call
+ * allows 30 calls per rolling minute per IP (measured 17 Sep: a burst of
+ * 40 got 10 through, then "Rate limit exceeded: 30 requests per minute"),
+ * and the wallet's fee estimates spend from the same bucket. Reads run
+ * concurrently up to a rolling budget with headroom left for the wallet,
+ * retry transient failures, and cache what cannot change.
  */
 import { createClient } from "genlayer-js";
 
@@ -40,22 +41,100 @@ function readClient(): Client {
   return client;
 }
 
-/* ── pacing: at most one read every 2.2s, bursts absorbed by the queue ── */
+/* ── budget: at most READ_BUDGET call starts in any rolling minute ── */
 
-const GAP_MS = 2_200;
-let lastAt = 0;
-let chainTail: Promise<unknown> = Promise.resolve();
+export const READ_WINDOW_MS = 60_000;
+export const READ_BUDGET = 22;
+const MIN_GAP_MS = 120;
+
+/**
+ * When may the next call start, given the (ascending) start times already
+ * planned? Pure, so the budget is testable to the millisecond. Mutates
+ * `starts`: drops starts that left the window, appends the planned one.
+ */
+export function planStart(starts: number[], now: number): number {
+  while (starts.length && starts[0] <= now - READ_WINDOW_MS) starts.shift();
+  let at = Math.max(now, (starts[starts.length - 1] ?? -Infinity) + MIN_GAP_MS);
+  if (starts.length >= READ_BUDGET) {
+    at = Math.max(at, starts[starts.length - READ_BUDGET] + READ_WINDOW_MS);
+  }
+  starts.push(at);
+  return at;
+}
+
+// The bucket is per IP, so the starts that actually HAPPENED are shared by
+// every tab and survive reloads. Plans this document has not begun yet stay
+// in memory: a page someone navigated away from must not keep holding
+// budget for reads that will never run.
+const STARTS_KEY = "isobar.read-starts";
+let memoryStarts: number[] = [];
+const pending: number[] = [];
+
+function recordedStarts(): number[] {
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(STARTS_KEY) ?? "[]");
+    return Array.isArray(raw) ? raw.filter((n): n is number => typeof n === "number") : memoryStarts;
+  } catch {
+    return memoryStarts;
+  }
+}
+
+function recordStart(at: number): void {
+  const keep = (t: number) => t > at - READ_WINDOW_MS;
+  memoryStarts = [...memoryStarts.filter(keep), at];
+  try {
+    const next = [...recordedStarts().filter(keep), at].sort((a, b) => a - b);
+    window.localStorage.setItem(STARTS_KEY, JSON.stringify(next));
+  } catch {
+    /* memory only */
+  }
+}
 
 function paced<T>(work: () => Promise<T>): Promise<T> {
-  const run = async (): Promise<T> => {
-    const wait = lastAt + GAP_MS - Date.now();
-    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-    lastAt = Date.now();
+  const now = Date.now();
+  const plan = [...new Set([...recordedStarts(), ...memoryStarts, ...pending])].sort((a, b) => a - b);
+  const at = planStart(plan, now);
+  pending.push(at);
+  const begin = () => {
+    pending.splice(pending.indexOf(at), 1);
+    recordStart(Date.now());
     return work();
   };
-  const next = chainTail.then(run, run);
-  chainTail = next.catch(() => undefined);
-  return next;
+  const wait = at - now;
+  return wait > 0 ? new Promise((r) => setTimeout(r, wait)).then(begin) : begin();
+}
+
+/** How long this page's next queued read still waits for the budget. */
+export function readWaitMs(): number {
+  return pending.length ? Math.max(0, Math.min(...pending) - Date.now()) : 0;
+}
+
+const isRateLimited = (e: unknown) => /rate limit|429|-32029/i.test(String((e as Error)?.message ?? e));
+
+/**
+ * The contract's own sentence from a refused read. genlayer-js surfaces
+ * gen_call refusals as viem's generic "Missing or invalid parameters";
+ * the contract's text rides base64-encoded (one tag byte first) at
+ * `cause.data.receipt.result`, so walk the chain for it.
+ */
+export function contractRefusal(e: unknown): string | null {
+  let x: unknown = e;
+  for (let depth = 0; x && depth < 8; depth++) {
+    const node = x as { data?: { receipt?: { result?: unknown } }; message?: unknown; cause?: unknown };
+    const b64 = node.data?.receipt?.result;
+    if (typeof b64 === "string") {
+      try {
+        const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
+        const text = new TextDecoder().decode(bytes).replace(/^[\u0000-\u001f]+/, "").trim();
+        if (text) return text;
+      } catch {
+        /* not base64: keep walking */
+      }
+    }
+    if (typeof node.message === "string" && node.message.includes("[EXPECTED]")) return node.message;
+    x = node.cause;
+  }
+  return null;
 }
 
 async function view<T>(functionName: string, args: unknown[], { tries = 3 } = {}): Promise<T> {
@@ -68,55 +147,131 @@ async function view<T>(functionName: string, args: unknown[], { tries = 3 } = {}
       return JSON.parse(String(raw)) as T;
     } catch (e) {
       lastErr = e;
-      const text = String((e as Error)?.message ?? e);
-      if (text.includes("[EXPECTED]")) {
-        throw new ReadError(text.split("[EXPECTED]")[1]?.trim() ?? text, false);
+      const refusal = contractRefusal(e);
+      if (refusal) {
+        throw new ReadError(refusal.split("[EXPECTED]").pop()?.trim() || refusal, false);
       }
       if (!isTransient(e) || i === tries - 1) break;
-      await new Promise((r) => setTimeout(r, 2_500 * (i + 1)));
+      // Another tab or the wallet spent the shared bucket: wait for the window to roll.
+      await new Promise((r) => setTimeout(r, (isRateLimited(e) ? 15_000 : 2_500) * (i + 1)));
     }
   }
   throw new ReadError(
     isTransient(lastErr)
       ? "Studio Next is not answering right now; it usually recovers in a moment."
-      : `The chain read failed: ${String((lastErr as Error)?.message ?? lastErr).slice(0, 160)}`,
+      : "The chain could not answer this read. Reload in a moment; if it persists, the record may not exist.",
     isTransient(lastErr),
   );
 }
 
 /* ── caches ── */
 
-let configCache: ConfigView | null = null;
-const marketCache = new Map<string, { at: number; value: MarketView }>();
-const MARKET_TTL = 15_000;
+// Memory for this page; session storage so a reload inside the TTL spends
+// no budget. Keys carry the deployment address.
+const TTL = 30_000;
+const STASH = `isobar.${CONTRACT_ADDRESS}.`;
+const memo = new Map<string, { at: number; value: unknown }>();
+let configFlight: Promise<ConfigView> | null = null;
+
+function cached<T>(key: string): T | undefined {
+  const hit = memo.get(key);
+  if (hit && Date.now() - hit.at < TTL) return hit.value as T;
+  try {
+    const raw = window.sessionStorage.getItem(STASH + key);
+    if (raw) {
+      const { at, value } = JSON.parse(raw) as { at: number; value: T };
+      if (Date.now() - at < TTL) {
+        memo.set(key, { at, value });
+        return value;
+      }
+    }
+  } catch {
+    /* no session storage: memory only */
+  }
+  return undefined;
+}
+
+function remember<T>(key: string, value: T): T {
+  const at = Date.now();
+  memo.set(key, { at, value });
+  try { window.sessionStorage.setItem(STASH + key, JSON.stringify({ at, value })); } catch { /* memory only */ }
+  return value;
+}
 
 export function invalidateReads(): void {
-  marketCache.clear();
+  memo.clear();
+  configFlight = null;
+  try {
+    for (let i = window.sessionStorage.length - 1; i >= 0; i--) {
+      const k = window.sessionStorage.key(i);
+      if (k?.startsWith(STASH)) window.sessionStorage.removeItem(k);
+    }
+  } catch {
+    /* memory only */
+  }
 }
 
 /* ── typed getters ── */
 
-/** The contract's own rules and catalog; immutable per deployment. */
-export async function getConfig(): Promise<ConfigView> {
-  configCache ??= await view<ConfigView>("get_config", []);
-  return configCache;
+/** The contract's rules and catalog (immutable) plus the live reserve
+ *  figures (not): pass `fresh` wherever the reserve decides a button. */
+export async function getConfig(fresh = false): Promise<ConfigView> {
+  if (!fresh) {
+    const hit = cached<ConfigView>("config");
+    if (hit) return hit;
+  } else {
+    configFlight = null;
+  }
+  // One in-flight read shared by every caller; a failure is not cached.
+  configFlight ??= view<ConfigView>("get_config", [])
+    .then((c) => remember("config", c))
+    .finally(() => { configFlight = null; });
+  return configFlight;
 }
 
 export async function getMarket(id: string, fresh = false): Promise<MarketView | null> {
-  const hit = marketCache.get(id);
-  if (!fresh && hit && Date.now() - hit.at < MARKET_TTL) return hit.value;
+  if (!fresh) {
+    const hit = cached<MarketView>(`market.${id}`);
+    if (hit) return hit;
+  }
   try {
-    const value = await view<MarketView>("get_market", [id]);
-    marketCache.set(id, { at: Date.now(), value });
-    return value;
+    return remember(`market.${id}`, await view<MarketView>("get_market", [id]));
   } catch (e) {
     if (e instanceof ReadError && !e.transient && /unknown market/i.test(e.message)) return null;
     throw e;
   }
 }
 
-export async function listMarketIds(offset = 0, limit = 50): Promise<string[]> {
-  return view<string[]>("list_markets", [offset, limit]);
+export async function listMarketIds(offset = 0, limit = 50, fresh = false): Promise<string[]> {
+  if (offset !== 0 || limit !== 50) return view<string[]>("list_markets", [offset, limit]);
+  if (!fresh) {
+    const hit = cached<string[]>("ids");
+    if (hit) return hit;
+  }
+  return remember("ids", await view<string[]>("list_markets", [offset, limit]));
+}
+
+/**
+ * Many markets at once, concurrently within the read budget. `onProgress`
+ * sees the markets read so far in the ORDER OF `ids` (cards never jump)
+ * and how many of the ids have answered.
+ */
+export async function getMarkets(
+  ids: string[],
+  { fresh = false, onProgress }: {
+    fresh?: boolean;
+    onProgress?: (markets: MarketView[], answered: number, total: number) => void;
+  } = {},
+): Promise<MarketView[]> {
+  const slots: (MarketView | null | undefined)[] = ids.map(() => undefined);
+  const present = () => slots.filter((m): m is MarketView => !!m);
+  let answered = 0;
+  await Promise.all(ids.map(async (id, i) => {
+    slots[i] = await getMarket(id, fresh);
+    answered += 1;
+    onProgress?.(present(), answered, ids.length);
+  }));
+  return present();
 }
 
 export async function getStats(): Promise<StatsView> {

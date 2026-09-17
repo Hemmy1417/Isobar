@@ -36,7 +36,14 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
       </div>
       <div className="stack" style={{ gap: 18, marginTop: 12 }}>
         {rounds.map((r) => {
-          const snapshot = r.snapshot ?? [];
+          // Sources in the market's own order, every round, so rounds compare at a glance.
+          const rank = (s: string) => {
+            const i = m.sources.findIndex((x) => x.source === s);
+            return i < 0 ? 99 : i;
+          };
+          const snapshot = (r.snapshot ?? []).slice().sort((a, b) => rank(a.source) - rank(b.source));
+          const names = (snapshot.length ? snapshot.map((row) => row.source) : Object.keys(r.panel.sources))
+            .slice().sort((a, b) => rank(a) - rank(b));
           return (
             <div key={r.round} className="panel">
               <div className="spread" style={{ flexWrap: "wrap", gap: 8 }}>
@@ -53,8 +60,7 @@ export function EvidencePanel({ market: m, rounds }: { market: MarketView; round
                 </p>
               ) : null}
               <div className="stack" style={{ gap: 8, marginTop: 10 }}>
-                {(snapshot.length ? snapshot : Object.keys(r.panel.sources).map((s) => null)).map((row, i) => {
-                  const name = row?.source ?? Object.keys(r.panel.sources)[i];
+                {names.map((name) => {
                   const finding = r.panel.sources[name];
                   const reading = r.outcome.readings?.[name];
                   return (

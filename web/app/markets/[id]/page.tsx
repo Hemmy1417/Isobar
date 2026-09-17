@@ -43,7 +43,7 @@ export default function MarketPage({ params }: { params: Promise<{ id: string }>
           </h1>
           <p className="fine" style={{ marginTop: 8 }}>
             {laneText(m.lane)}. Sources: {m.sources.map((s) => sourceName(s.source)).join(" and ")} —
-            both fetched by every validator, urls built by the contract from the catalog.
+            both fetched by every validator, URLs built by the contract from the catalog.
           </p>
         </div>
         <PhaseChip phase={m.phase} />
@@ -56,6 +56,7 @@ export default function MarketPage({ params }: { params: Promise<{ id: string }>
             const last = rounds[rounds.length - 1];
             const readings = Object.entries(last.outcome.readings ?? {})
               .filter(([, r]) => r.covered)
+              .sort(([a], [b]) => m.sources.findIndex((x) => x.source === a) - m.sources.findIndex((x) => x.source === b))
               .map(([s, r]) => `${sourceName(s)} read ${readingText(r.value_x100, m.unit)}`);
             return readings.length ? <> — {readings.join("; ")} on {formatDocDate(m.window_date)}.</> : null;
           })() : null}

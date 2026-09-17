@@ -12,7 +12,7 @@ import type { SubmitInput } from "@genlayer/transaction-kit-react";
 import { CONTRACT_ADDRESS } from "../../../lib/config";
 import { useTransactionKit } from "../../../lib/kit";
 import { formatDocDate, marketQuestion, metricLabel, sourceName } from "../../../lib/present";
-import { getConfig, getMarket, invalidateReads, listMarketIds, pollUntil } from "../../../lib/read";
+import { getConfig, getMarkets, invalidateReads, listMarketIds, pollUntil } from "../../../lib/read";
 import { useWallet } from "../../../lib/wallet";
 import type { ConfigView } from "../../../lib/types";
 import { ErrorNotice, Loading } from "../../components/bits";
@@ -74,16 +74,12 @@ export default function NewMarketPage() {
     // The new market is the newest id whose creator is this wallet.
     let found = "";
     await pollUntil(async () => {
-      const ids = await listMarketIds(0, 50);
-      for (const id of ids.slice().reverse().slice(0, 5)) {
-        const m = await getMarket(id, true);
-        if (m && m.creator.toLowerCase() === address.toLowerCase()
-            && m.window_date === date && m.location_id === location) {
-          found = id;
-          return true;
-        }
-      }
-      return false;
+      const ids = (await listMarketIds(0, 50, true)).slice(-5).reverse();
+      const recent = await getMarkets(ids, { fresh: true });
+      const mine = recent.find((m) => m.creator.toLowerCase() === address.toLowerCase()
+        && m.window_date === date && m.location_id === location);
+      found = mine?.market_id ?? "";
+      return !!mine;
     }, { tries: 10 });
     router.push(found ? `/markets/${found}` : "/markets");
   }

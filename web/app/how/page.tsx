@@ -14,7 +14,7 @@ export default function HowPage() {
           The whole mechanism, in the order money meets it. Everything below is enforced by
           one intelligent contract on GenLayer Studio Next
           {CONTRACT_CONFIGURED ? (
-            <> — <a className="mono" href={addressUrl(CONTRACT_ADDRESS)} target="_blank" rel="noreferrer">{CONTRACT_ADDRESS}</a></>
+            <> — <a className="mono" href={addressUrl(CONTRACT_ADDRESS)} target="_blank" rel="noreferrer" style={{ overflowWrap: "anywhere" }}>{CONTRACT_ADDRESS}</a></>
           ) : null}.
         </p>
       </div>

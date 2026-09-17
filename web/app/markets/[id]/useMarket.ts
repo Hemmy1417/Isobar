@@ -29,12 +29,10 @@ export function useMarket(id: string) {
         setConfig(cfg);
         if (!m) { setNotFound(true); return; }
         setMarket(m);
-        const rs: RoundView[] = [];
-        for (let n = 1; n <= m.rounds_count; n++) {
-          const r = await getRound(id, n);
-          if (r) rs.push(r);
-        }
-        if (alive) setRounds(rs);
+        const rs = await Promise.all(
+          Array.from({ length: m.rounds_count }, (_, i) => getRound(id, i + 1)),
+        );
+        if (alive) setRounds(rs.filter((r): r is RoundView => !!r));
       } catch (e) {
         if (alive) setError(e);
       }
@@ -50,12 +48,8 @@ export function useMarket(id: string) {
         const pos = await getPosition(id, address);
         if (alive) setPosition(pos);
         const tids = await myTicketIds(address);
-        const ts: TicketView[] = [];
-        for (const tid of tids.slice(-20)) {
-          const t = await getTicket(tid);
-          if (t && t.legs.some((l) => l.market_id === id)) ts.push(t);
-        }
-        if (alive) setTickets(ts);
+        const ts = await Promise.all(tids.slice(-20).map((tid) => getTicket(tid)));
+        if (alive) setTickets(ts.filter((t): t is TicketView => !!t && t.legs.some((l) => l.market_id === id)));
       } catch {
         /* the acts fall back to connect-first reasons */
       }

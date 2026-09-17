@@ -11,7 +11,7 @@ import { formatDocDate, marketNumber, marketQuestion, multiplierText, ticketNumb
 import { getBalance, getConfig, getMarket, getPosition, getTicket, invalidateReads, myMarketIds, myTicketIds } from "../../lib/read";
 import { useWallet } from "../../lib/wallet";
 import type { BalanceView, ConfigView, MarketView, PositionView, TicketView } from "../../lib/types";
-import { Empty, Loading, PhaseChip } from "../components/bits";
+import { Empty, ErrorNotice, Loading, PhaseChip } from "../components/bits";
 import { TxPanel } from "../components/TxPanel";
 import { WalletChoices } from "../components/WalletButton";
 
@@ -26,35 +26,33 @@ export default function MePage() {
   const [balance, setBalance] = useState<BalanceView | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [tick, setTick] = useState(0);
+  const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
     let alive = true;
     if (!address) return;
     (async () => {
       try {
-        const cfg = await getConfig();
-        if (alive) setConfig(cfg);
-        const bal = await getBalance(address);
-        if (alive) setBalance(bal);
-        const mids = await myMarketIds(address);
-        const out: Row[] = [];
-        for (const id of mids.slice().reverse()) {
-          const m = await getMarket(id, tick > 0);
-          if (!m) continue;
-          const position = await getPosition(id, address);
-          out.push({ market: m, position });
-          if (alive) setRows([...out]);
-        }
-        if (alive && mids.length === 0) setRows([]);
-        const tids = await myTicketIds(address);
-        const ts: TicketView[] = [];
-        for (const id of tids.slice().reverse()) {
-          const t = await getTicket(id);
-          if (t) ts.push(t);
-        }
-        if (alive) setTickets(ts);
-      } catch {
-        if (alive) { setRows((r) => r ?? []); setTickets((t) => t ?? []); }
+        setError(null);
+        const [cfg, bal, mids, tids] = await Promise.all([
+          getConfig(), getBalance(address), myMarketIds(address), myTicketIds(address),
+        ]);
+        if (!alive) return;
+        setConfig(cfg);
+        setBalance(bal);
+        const [found, ts] = await Promise.all([
+          Promise.all(mids.slice().reverse().map(async (id): Promise<Row | null> => {
+            const [m, position] = await Promise.all([getMarket(id, tick > 0), getPosition(id, address)]);
+            return m ? { market: m, position } : null;
+          })),
+          Promise.all(tids.slice().reverse().map((id) => getTicket(id))),
+        ]);
+        if (!alive) return;
+        setRows(found.filter((r): r is Row => !!r));
+        setTickets(ts.filter((t): t is TicketView => !!t));
+      } catch (e) {
+        // A failed read is never shown as "no positions".
+        if (alive) setError(e);
       }
     })();
     return () => { alive = false; };
@@ -79,13 +77,14 @@ export default function MePage() {
   return (
     <div className="stack" style={{ gap: 20 }}>
       <h1 style={{ fontSize: 30 }}>My positions</h1>
+      <ErrorNotice error={error} />
 
       <div className="card" style={{ maxWidth: 520 }}>
         <div className="spread">
           <div>
             <p className="eyebrow">Claimable</p>
             <p className="reading" style={{ fontSize: 24, marginTop: 4 }}>
-              {balance ? `${formatGen(claimable)} GEN` : "…"}
+              {balance ? `${formatGen(claimable)} GEN` : error ? "unavailable" : "…"}
             </p>
           </div>
           {claimable > 0n && kit ? (
@@ -112,7 +111,7 @@ export default function MePage() {
 
       <div>
         <h2 style={{ fontSize: 20, marginBottom: 10 }}>Markets</h2>
-        {rows === null ? <Loading what="your markets" /> : rows.length === 0 ? (
+        {rows === null ? (error ? null : <Loading what="your markets" />) : rows.length === 0 ? (
           <Empty>No positions yet. <Link href="/markets">The docket</Link> has open questions.</Empty>
         ) : (
           <div className="grid-2">
@@ -141,7 +140,7 @@ export default function MePage() {
 
       <div>
         <h2 style={{ fontSize: 20, marginBottom: 10 }}>Tickets</h2>
-        {tickets === null ? <Loading what="your tickets" /> : tickets.length === 0 ? (
+        {tickets === null ? (error ? null : <Loading what="your tickets" />) : tickets.length === 0 ? (
           <Empty>No parlay tickets. <Link href="/parlay">The builder</Link> chains open markets into one.</Empty>
         ) : (
           <div className="grid-2">

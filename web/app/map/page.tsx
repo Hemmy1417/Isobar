@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { getConfig, getMarket, listMarketIds } from "../../lib/read";
+import { getConfig, getMarkets, listMarketIds } from "../../lib/read";
 import type { ConfigView, MarketView } from "../../lib/types";
-import { ErrorNotice, Loading } from "../components/bits";
+import { ErrorNotice, Loading, ReadProgress } from "../components/bits";
 import { MarketCard } from "../markets/MarketCard";
 import { PHASE_COLOR, PHASE_LEGEND, stationsFrom, WorldMap } from "./WorldMap";
 
@@ -15,6 +15,7 @@ export default function MapPage() {
   const [loaded, setLoaded] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
+  const [progress, setProgress] = useState({ answered: 0, total: 0 });
 
   useEffect(() => {
     let alive = true;
@@ -24,12 +25,16 @@ export default function MapPage() {
         if (!alive) return;
         setConfig(cfg);
         const ids = await listMarketIds(0, 50);
-        const out: MarketView[] = [];
-        for (const id of ids) {
-          const m = await getMarket(id);
-          if (m) out.push(m);
-          if (alive) setMarkets([...out]);
-        }
+        if (!alive) return;
+        setProgress({ answered: 0, total: ids.length });
+        const all = await getMarkets(ids, {
+          onProgress: (ms, answered, total) => {
+            if (!alive) return;
+            setMarkets(ms);
+            setProgress({ answered, total });
+          },
+        });
+        if (alive) setMarkets(all);
       } catch (e) {
         if (alive) setError(e);
       } finally {
@@ -64,6 +69,8 @@ export default function MapPage() {
         </div>
       </div>
 
+      <ErrorNotice error={error} />
+      <ReadProgress answered={progress.answered} total={progress.total} />
       <div className="map-stage">
         <WorldMap stations={stations} selected={selected} onSelect={setSelected} />
       </div>

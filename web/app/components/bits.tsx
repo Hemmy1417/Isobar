@@ -1,14 +1,41 @@
 "use client";
 
 import { phaseChip, phaseLabel, sentence } from "../../lib/present";
-import { ReadError } from "../../lib/read";
+import { useEffect, useState } from "react";
+
+import { ReadError, readWaitMs } from "../../lib/read";
+
+/** Seconds this page still waits for the shared read budget, when it matters. */
+function useBudgetWait(): number {
+  const [s, setS] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setS(Math.ceil(readWaitMs() / 1000)), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return s;
+}
+
+function BudgetNote() {
+  const s = useBudgetWait();
+  if (s < 3) return null;
+  return (
+    <span className="fine" style={{ display: "block", marginTop: 4 }}>
+      Studio Next allows 30 reads a minute per visitor, so the next one starts in {s} seconds.
+    </span>
+  );
+}
 
 export function PhaseChip({ phase }: { phase: string }) {
   return <span className={`chip ${phaseChip(phase)}`}>{phaseLabel(phase)}</span>;
 }
 
 export function Loading({ what = "the record" }: { what?: string }) {
-  return <p className="muted small" style={{ paddingBlock: 30 }}>Reading {what} from the chain…</p>;
+  return <div className="muted small" style={{ paddingBlock: 30 }}>Reading {what} from the chain…<BudgetNote /></div>;
+}
+
+export function ReadProgress({ answered, total, noun = "markets" }: { answered: number; total: number; noun?: string }) {
+  if (total === 0 || answered >= total) return null;
+  return <div className="fine" role="status">Read {answered} of {total} {noun} from the chain…<BudgetNote /></div>;
 }
 
 export function Empty({ children }: { children: React.ReactNode }) {

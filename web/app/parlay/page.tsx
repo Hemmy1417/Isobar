@@ -17,7 +17,7 @@ import {
   formatDocDate, marketNumber, marketQuestion, multiplierText, plural,
   ticketNumber, ticketStateLabel, verdictShort,
 } from "../../lib/present";
-import { getConfig, getMarket, getTicket, invalidateReads, listMarketIds, myTicketIds } from "../../lib/read";
+import { getConfig, getMarkets, getTicket, invalidateReads, listMarketIds, myTicketIds } from "../../lib/read";
 import { useWallet } from "../../lib/wallet";
 import type { ConfigView, MarketView, TicketView } from "../../lib/types";
 import { DEMO_PRICING_NOTE, Empty, ErrorNotice, Loading } from "../components/bits";
@@ -35,6 +35,7 @@ export default function ParlayPage() {
   const [stake, setStake] = useState("0.1");
   const [reviewing, setReviewing] = useState(false);
   const [tickets, setTickets] = useState<TicketView[] | null>(null);
+  const [ticketsError, setTicketsError] = useState<unknown>(null);
   const [settling, setSettling] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [tick, setTick] = useState(0);
@@ -44,16 +45,16 @@ export default function ParlayPage() {
     let alive = true;
     (async () => {
       try {
-        const cfg = await getConfig();
+        const cfg = await getConfig(tick > 0);
         if (!alive) return;
         setConfig(cfg);
-        const ids = await listMarketIds(0, 50);
-        const out: MarketView[] = [];
-        for (const id of ids.slice().reverse()) {
-          const m = await getMarket(id, tick > 0);
-          if (m) out.push(m);
-          if (alive) setMarkets([...out]);
-        }
+        const ids = (await listMarketIds(0, 50, tick > 0)).slice().reverse();
+        if (!alive) return;
+        const all = await getMarkets(ids, {
+          fresh: tick > 0,
+          onProgress: (ms) => { if (alive) setMarkets(ms); },
+        });
+        if (alive) setMarkets(all);
       } catch (e) {
         if (alive) setError(e);
       } finally {
@@ -68,15 +69,12 @@ export default function ParlayPage() {
     if (!address) { setTickets(null); return; }
     (async () => {
       try {
-        const ids = await myTicketIds(address);
-        const out: TicketView[] = [];
-        for (const id of ids.slice().reverse()) {
-          const t = await getTicket(id);
-          if (t) out.push(t);
-        }
-        if (alive) setTickets(out);
-      } catch {
-        if (alive) setTickets([]);
+        setTicketsError(null);
+        const ids = (await myTicketIds(address)).slice().reverse();
+        const out = await Promise.all(ids.map((id) => getTicket(id)));
+        if (alive) setTickets(out.filter((t): t is TicketView => !!t));
+      } catch (e) {
+        if (alive) setTicketsError(e);
       }
     })();
     return () => { alive = false; };
@@ -194,11 +192,11 @@ export default function ParlayPage() {
             </div>
             <div className="spread small">
               <span className="muted">Multiplier ({plural(legs.length, "leg")})</span>
-              <span className="reading">{multiplierText(mult)}</span>
+              <span className="reading">{legs.length >= config.min_legs ? multiplierText(mult) : "—"}</span>
             </div>
             <div className="spread small" style={{ marginTop: 4 }}>
               <span className="muted">Pays if every leg hits</span>
-              <span className="reading">{payoutWei !== null ? `${formatGen(payoutWei)} GEN` : "—"}</span>
+              <span className="reading">{payoutWei !== null && legs.length >= config.min_legs ? `${formatGen(payoutWei)} GEN` : "—"}</span>
             </div>
             <p className="fine" style={{ marginTop: 8 }}>{DEMO_PRICING_NOTE}</p>
             <p className="fine" style={{ marginTop: 4 }}>A ticket the contract declines credits your stake back to your claimable balance.</p>

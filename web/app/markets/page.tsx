@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { getConfig, getMarket, listMarketIds } from "../../lib/read";
+import { getConfig, getMarkets, listMarketIds } from "../../lib/read";
 import type { ConfigView, MarketView } from "../../lib/types";
-import { Empty, ErrorNotice, Loading } from "../components/bits";
+import { Empty, ErrorNotice, Loading, ReadProgress } from "../components/bits";
 import { MarketCard } from "./MarketCard";
 
 const FILTERS = [
@@ -20,6 +20,7 @@ export default function MarketsPage() {
   const [markets, setMarkets] = useState<MarketView[] | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
   const [error, setError] = useState<unknown>(null);
+  const [progress, setProgress] = useState({ answered: 0, total: 0 });
 
   useEffect(() => {
     let alive = true;
@@ -28,13 +29,17 @@ export default function MarketsPage() {
         const cfg = await getConfig();
         if (!alive) return;
         setConfig(cfg);
-        const ids = await listMarketIds(0, 50);
-        const out: MarketView[] = [];
-        for (const id of ids.slice().reverse()) {
-          const m = await getMarket(id);
-          if (m) out.push(m);
-          if (alive) setMarkets([...out]);
-        }
+        const ids = (await listMarketIds(0, 50)).slice().reverse();
+        if (!alive) return;
+        setProgress({ answered: 0, total: ids.length });
+        const all = await getMarkets(ids, {
+          onProgress: (ms, answered, total) => {
+            if (!alive) return;
+            if (ms.length > 0) setMarkets(ms);
+            setProgress({ answered, total });
+          },
+        });
+        if (alive) setMarkets(all);
       } catch (e) {
         if (alive) setError(e);
       }
@@ -71,7 +76,8 @@ export default function MarketsPage() {
 
       <ErrorNotice error={error} />
       {!markets && !error ? <Loading what="the docket" /> : null}
-      {markets && shown.length === 0 ? (
+      <ReadProgress answered={progress.answered} total={progress.total} />
+      {markets && shown.length === 0 && progress.answered >= progress.total ? (
         <Empty>
           {filter === "all"
             ? "No markets yet on this deployment. Open the first one — the catalog has sixteen strategic locations waiting."

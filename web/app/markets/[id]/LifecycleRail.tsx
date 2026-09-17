@@ -5,7 +5,7 @@
  * positions to settled money, in words, with the clock's next boundary.
  */
 import { appealDeadline, resolveAfter } from "../../../lib/acts";
-import { formatDateTime, formatDocDate } from "../../../lib/present";
+import { formatDateTime, formatDocDate, plural } from "../../../lib/present";
 import type { ConfigView, MarketView } from "../../../lib/types";
 
 interface Step {
@@ -49,7 +49,7 @@ export function LifecycleRail({ market: m, config, nowMs }: {
       detail: resolved
         ? `run ${m.rounds_count}, recorded on chain`
         : m.rounds_count > 0
-          ? `${m.rounds_count} round(s) retried — corroboration not yet possible`
+          ? `${plural(m.rounds_count, "round")} retried — corroboration not yet possible`
           : "any wallet triggers it; every validator fetches both sources",
       state: resolved ? "done" : nowMs >= canResolveAt ? "now" : "todo",
     },

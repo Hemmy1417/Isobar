@@ -109,6 +109,24 @@ export function readWaitMs(): number {
   return pending.length ? Math.max(0, Math.min(...pending) - Date.now()) : 0;
 }
 
+// Studio Next runs gen_calls in a small pool of execution slots shared by
+// every visitor (8, measured 17 Sep: "all 8 execution slots occupied").
+// One page never holds more than half of them.
+export const MAX_IN_FLIGHT = 4;
+let inFlight = 0;
+const waiting: Array<() => void> = [];
+
+async function withSlot<T>(work: () => Promise<T>): Promise<T> {
+  if (inFlight >= MAX_IN_FLIGHT) await new Promise<void>((r) => waiting.push(r));
+  inFlight += 1;
+  try {
+    return await work();
+  } finally {
+    inFlight -= 1;
+    waiting.shift()?.();
+  }
+}
+
 const isRateLimited = (e: unknown) => /rate limit|429|-32029/i.test(String((e as Error)?.message ?? e));
 
 /**
@@ -141,9 +159,9 @@ async function view<T>(functionName: string, args: unknown[], { tries = 3 } = {}
   let lastErr: unknown;
   for (let i = 0; i < tries; i++) {
     try {
-      const raw = await paced(() =>
+      const raw = await withSlot(() => paced(() =>
         readClient().readContract({ address: CONTRACT_ADDRESS, functionName, args }),
-      );
+      ));
       return JSON.parse(String(raw)) as T;
     } catch (e) {
       lastErr = e;

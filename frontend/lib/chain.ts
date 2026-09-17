@@ -22,12 +22,15 @@ export function truncAddr(addr: string): string {
   return addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr;
 }
 
-/** Errors worth an automatic retry: rate limits and transport drops. */
+/** Errors worth an automatic retry: rate limits, a saturated node and transport drops. */
 export function isTransient(e: unknown): boolean {
   const text = String((e as Error)?.message ?? e ?? "").toLowerCase();
   return (
     text.includes("429") ||
     text.includes("-32029") ||
+    // Studio Next: "Server busy: all 8 execution slots occupied, retry later"
+    text.includes("server busy") ||
+    text.includes("retry later") ||
     text.includes("rate") ||
     text.includes("fetch failed") ||
     text.includes("econnreset") ||

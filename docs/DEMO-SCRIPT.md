@@ -72,13 +72,14 @@ Point at the appeal card (or the recorded appeal round if one exists).
 
 ## 2:20 — The parlay
 
-Open `/parlay`. Pick three legs across the map. Point at the multiplier.
+Open `/parlay`. Pick two legs — Panama wind (#9) and Hamburg wind (#10).
+Point at the multiplier.
 
-> "Markets chain into a parlay — Panama wind, Rotterdam rain, a
-> Gibraltar gale. Flat demo multipliers, labeled as demo pricing on
-> every surface, and the full payout is reserved from a visible
-> on-chain pool the moment the ticket is bought. A voided leg drops
-> out instead of killing the ticket."
+> "Markets chain into a parlay — Panama wind and a Hamburg gale on one
+> ticket. Flat demo multipliers, labeled as demo pricing on every
+> surface, and the full payout is reserved from a visible on-chain pool
+> the moment the ticket is bought. A voided leg drops out instead of
+> killing the ticket."
 
 Buy the ticket (second wallet confirm on camera).
 

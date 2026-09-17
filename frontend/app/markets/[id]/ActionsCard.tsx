@@ -50,7 +50,9 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
     return { ...base, method: "void_timeout", args: [m.market_id] };
   }, [verb, m.market_id, side, grounds]);
 
-  const done = () => { invalidateReads(); setVerb(null); setGrounds(""); onChange(); };
+  // The result stays on screen until closed; the next read is fresh either way.
+  const done = () => { invalidateReads(); };
+  const close = () => { setVerb(null); setGrounds(""); onChange(); };
 
   if (!address) {
     return (
@@ -100,7 +102,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
           </div>
           <div style={{ marginBottom: 8 }}><TestGen /></div>
           {verb === "stake" && kit && tx && stakeWei ? (
-            <TxPanel kit={kit} tx={tx} value={stakeWei} onDone={done}
+            <TxPanel kit={kit} tx={tx} value={stakeWei} onDone={done} onClose={close}
                      confirmText={`Stake ${amount} GEN on ${side === "YES" ? "Yes" : "No"}`} />
           ) : (
             <button className="btn btn-primary" disabled={!chainOk || !stakeWei || stakeWei < BigInt(config.min_stake_wei)}
@@ -127,7 +129,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
             <p className="small" style={{ fontWeight: 600 }}>{act.label}</p>
             <p className="fine" style={{ marginBottom: 8 }}>{blurb}</p>
             {verb === v && kit && tx ? (
-              <TxPanel kit={kit} tx={tx} onDone={done} confirmText={act.label} />
+              <TxPanel kit={kit} tx={tx} onDone={done} onClose={close} confirmText={act.label} />
             ) : (
               <button className="btn btn-ghost" disabled={!chainOk} onClick={() => setVerb(v)}>{act.label}</button>
             )}
@@ -153,7 +155,7 @@ export function ActionsCard({ market: m, config, position, tickets, nowMs, onCha
                       placeholder="Which recorded reading looks wrong, and why" />
           </div>
           {verb === "appeal" && kit && tx ? (
-            <TxPanel kit={kit} tx={tx} onDone={done} confirmText="File the appeal" />
+            <TxPanel kit={kit} tx={tx} onDone={done} onClose={close} confirmText="File the appeal" />
           ) : (
             <button className="btn btn-primary" disabled={!chainOk || !grounds.trim()} onClick={() => setVerb("appeal")}>
               Review the appeal

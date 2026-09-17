@@ -7,7 +7,7 @@
  * offered as a button that fails.
  */
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SubmitInput } from "@genlayer/transaction-kit-react";
 
 import { legEligible, ticketSettleable } from "../../lib/acts";
@@ -40,6 +40,7 @@ export default function ParlayPage() {
   const [settling, setSettling] = useState<string | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [tick, setTick] = useState(0);
+  const bought = useRef(false);
   const nowMs = Date.now();
 
   useEffect(() => {
@@ -212,7 +213,11 @@ export default function ParlayPage() {
                 <p className="fine">Connect a wallet from the header to buy the ticket.</p>
               ) : reviewing && kit && stakeWei ? (
                 <TxPanel kit={kit} tx={tx} value={stakeWei}
-                         onDone={(ok) => { if (ok) { invalidateReads(); setPicked({}); setTick((t) => t + 1); } setReviewing(false); }}
+                         onDone={(ok) => { if (ok) { invalidateReads(); bought.current = true; } }}
+                         onClose={() => {
+                           if (bought.current) { bought.current = false; setPicked({}); setTick((t) => t + 1); }
+                           setReviewing(false);
+                         }}
                          confirmText={`Buy the ticket — ${stake} GEN at ${multiplierText(mult)}`} />
               ) : (
                 <button className="btn btn-primary" style={{ width: "100%" }}
@@ -261,7 +266,8 @@ export default function ParlayPage() {
                               <div style={{ marginTop: 8 }}>
                                 <TxPanel kit={kit}
                                          tx={{ kind: "write", address: CONTRACT_ADDRESS, method: "settle_ticket", args: [t.ticket_id] }}
-                                         onDone={() => { invalidateReads(); setSettling(null); setTick((x) => x + 1); }}
+                                         onDone={() => invalidateReads()}
+                                         onClose={() => { setSettling(null); setTick((x) => x + 1); }}
                                          confirmText="Settle the ticket" />
                               </div>
                             ) : (

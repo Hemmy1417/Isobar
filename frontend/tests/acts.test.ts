@@ -207,6 +207,9 @@ describe("parlay helpers", () => {
     const both = new Map([["mk-000001", final], ["mk-000002", open]]);
     expect(ticketSettleable(t, both).ok).toBe(false);
     expect(ticketSettleable(t, both).reason).toMatch(/not final/);
+    // a person reads this sentence: "Market #2", never the raw record id
+    expect(ticketSettleable(t, both).reason).toMatch(/^Market #\d+ is not final yet$/);
+    expect(ticketSettleable(t, both).reason).not.toMatch(/mk-/);
     const settledMap = new Map([["mk-000001", final], ["mk-000002", market({ market_id: "mk-000002", state: "VOID" })]]);
     expect(ticketSettleable(t, settledMap).ok).toBe(true);
     expect(ticketSettleable({ ...t, state: "WON" }, settledMap).ok).toBe(false);

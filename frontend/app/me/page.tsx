@@ -101,7 +101,8 @@ export default function MePage() {
         {claiming && kit ? (
           <div style={{ marginTop: 10 }}>
             <TxPanel kit={kit} tx={{ kind: "write", address: CONTRACT_ADDRESS, method: "claim", args: [] }}
-                     onDone={() => { invalidateReads(); setClaiming(false); setTick((t) => t + 1); }}
+                     onDone={() => invalidateReads()}
+                     onClose={() => { setClaiming(false); setTick((t) => t + 1); }}
                      confirmText={`Claim ${formatGen(claimable)} GEN`} />
           </div>
         ) : null}

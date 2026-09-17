@@ -134,13 +134,19 @@ export function legEligible(m: MarketView, nowMs: number): { ok: boolean; reason
 }
 
 /** Settlement availability for a ticket. */
+/** "mk-000009" → "Market #9": ids never reach a sentence a person reads. */
+function marketLabel(id: string): string {
+  const n = Number(String(id).replace(/^mk-0*/, ""));
+  return Number.isFinite(n) && n > 0 ? `Market #${n}` : "A leg's market";
+}
+
 export function ticketSettleable(t: TicketView, markets: Map<string, MarketView>): { ok: boolean; reason?: string } {
   if (t.state !== "LIVE") return { ok: false, reason: `the ticket is already ${t.state.toLowerCase()}` };
   for (const leg of t.legs) {
     const m = markets.get(leg.market_id);
     if (!m) return { ok: false, reason: "a leg's market could not be read" };
     if (m.state !== "FINAL" && m.state !== "VOID")
-      return { ok: false, reason: `${leg.market_id} is not final yet` };
+      return { ok: false, reason: `${marketLabel(leg.market_id)} is not final yet` };
   }
   return { ok: true };
 }

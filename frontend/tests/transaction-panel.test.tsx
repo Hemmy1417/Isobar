@@ -57,6 +57,17 @@ describe("the transaction panel", () => {
     expect(onDone).toHaveBeenCalledWith(true);
   });
 
+  it("keeps the outcome on screen until the person closes it", async () => {
+    const onDone = vi.fn();
+    const onClose = vi.fn();
+    render(<TxPanel kit={finalizingKit()} tx={stakeTx} onDone={onDone} onClose={onClose} />);
+    await approve();
+    expect(await screen.findByText(/Confirmed: finalized on chain/)).toBeTruthy();
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it("never calls an accepted-but-unfinalized write confirmed", async () => {
     const onDone = vi.fn();
     render(<TxPanel kit={createMockKit({ ...fast, outcome: { statusName: "ACCEPTED", executionResultName: "FINISHED_WITH_RETURN" } })}

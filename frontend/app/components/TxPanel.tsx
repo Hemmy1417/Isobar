@@ -34,11 +34,14 @@ const PHASE_TEXT: Record<string, string> = {
  * it, or a parent re-render building a new object, can neither re-price
  * the quote mid-review nor change what gets signed.
  */
-export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, confirmText: confirmProp }: {
+export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, onClose, confirmText: confirmProp }: {
   kit: TransactionKit;
   tx: SubmitInput;
   value?: bigint;
   onDone?: (successful: boolean) => void;
+  /** Shown as a Close button once the transaction is done, so the outcome
+   *  stays on screen until the person has read it. */
+  onClose?: () => void;
   confirmText?: string;
 }) {
   const [tx] = useState(txProp);
@@ -151,6 +154,11 @@ export function TxPanel({ kit, tx: txProp, value: valueProp, onDone, confirmText
           </div>
         ))}
       </div>
+      {done && status && onClose ? (
+        <div className="row" style={{ justifyContent: "flex-end", marginBottom: 8 }}>
+          <button className="btn btn-ghost" onClick={onClose}>Close</button>
+        </div>
+      ) : null}
       {done && status ? (
         succeeded ? (
           <div className="notice notice-ok">

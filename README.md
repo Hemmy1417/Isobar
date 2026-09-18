@@ -160,6 +160,7 @@ that resolved Yes two days later, once NASA POWER published.
 | threshold 5.00 → **VOID_CONFLICT** | a genuine reanalysis split settles nobody | `0xf906845693d0d183038d08eb3cc0a4c52bc612b8d4bd974bbdf39ee555d56b1b` |
 | window 15 Sep → **RETRY** | POWER still `-999`: *no corroboration, no settlement*; round recorded, market stays resolvable | `0x6b751a2e92c03639a6aa015b09750539a8aab442dfa118ceba0c2c63b1eb1213` |
 | same market, round 2 (18 Sep) → **YES** | POWER had published 4.20 m/s for 15 Sep; with Open-Meteo 4.62 m/s both clear 3 m/s, so the retry became a verdict under `MAJORITY_AGREE` | `0xa6d4375c94898e455c878f8f9b27eff1013aa29d679c652a16594bf45d1dc6a1` |
+| same market finalized (18 Sep) → **FINAL YES** | the appeal window closed with no appeal; the Yes stake (0.02 GEN, nobody on No) credited back to its staker's claim ledger | `0xf3745c2eab26657692ee44deccbddefecd4e9be1cb00b2773b994e367abdf76d` |
 | threshold 8.00 → **NO** | the negative control fired | `0xb4559f21d8b49d8484d4926993dfa5141eb412c0378d41f310bd309cb0ac809b` |
 | re-resolve refused | `[EXPECTED] a verdict already stands; a re-judgment is an appeal` | `0x3f77f6d710ea101edeb7fe6f96f954a2d42d6ec7b75c3991690bc24d3a58f0a5` |
 | early finalize refused | `[EXPECTED] the appeal window is open for 3600 seconds after resolution` | `0x2e1569c1a37159b8bf69f56237422cb7394752689f5fdd4e1e1ac47927494935` |

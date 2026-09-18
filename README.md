@@ -22,7 +22,7 @@ full payout is reserved on-chain the moment it is bought.
 | | |
 |---|---|
 | Live app | [iso-bar.vercel.app](https://iso-bar.vercel.app) |
-| Proving ground app | [isobar-frontend-i1kv.vercel.app](https://isobar-frontend-i1kv.vercel.app): resolved markets on real recorded weather (a void on conflict, a Yes upheld on appeal, a No, a retry), served from the test copy described [below](#live-on-chain-the-disposable-proving-ground-16-sep-2026) |
+| Proving ground app | [isobar-frontend-i1kv.vercel.app](https://isobar-frontend-i1kv.vercel.app): resolved markets on real recorded weather (a void on conflict, a Yes upheld on appeal, a No, a retry that later resolved Yes), served from the test copy described [below](#live-on-chain-the-disposable-proving-ground-16-sep-2026) |
 | Demo video | [youtu.be/qm7L5LDLtZE](https://youtu.be/qm7L5LDLtZE) (2:59) |
 | Contract | [`0x169cE1cD5aAa013adee55a4B3ed86752cc999375`](https://explorer-studio-dev.genlayer.com/address/0x169cE1cD5aAa013adee55a4B3ed86752cc999375) |
 | Network | GenLayer Studio Next (chain 61997) |
@@ -151,13 +151,15 @@ identical to the record's); every transaction FINALIZED under
 **Browse these markets in the app** at
 [isobar-frontend-i1kv.vercel.app](https://isobar-frontend-i1kv.vercel.app): the
 same frontend pointed at this contract, with a banner on every page saying
-so. Market #2 is the void, #1 the Yes with its appeal, #4 the No, #3 the retry.
+so. Market #2 is the void, #1 the Yes with its appeal, #4 the No, #3 the retry
+that resolved Yes two days later, once NASA POWER published.
 
 | proof | asserted | tx |
 |---|---|---|
 | threshold 3.00 → **YES** | both sources over; agreed readings `{open-meteo: 5.22, nasa-power: 3.84}` recorded in the round | `0x6af4cf1f28a4a05ddacc1a3fe0d1abe2926fb58d10ca0a5570450b7bc0f2976b` |
 | threshold 5.00 → **VOID_CONFLICT** | a genuine reanalysis split settles nobody | `0xf906845693d0d183038d08eb3cc0a4c52bc612b8d4bd974bbdf39ee555d56b1b` |
 | window 15 Sep → **RETRY** | POWER still `-999`: *no corroboration, no settlement*; round recorded, market stays resolvable | `0x6b751a2e92c03639a6aa015b09750539a8aab442dfa118ceba0c2c63b1eb1213` |
+| same market, round 2 (18 Sep) → **YES** | POWER had published 4.20 m/s for 15 Sep; with Open-Meteo 4.62 m/s both clear 3 m/s, so the retry became a verdict under `MAJORITY_AGREE` | `0xa6d4375c94898e455c878f8f9b27eff1013aa29d679c652a16594bf45d1dc6a1` |
 | threshold 8.00 → **NO** | the negative control fired | `0xb4559f21d8b49d8484d4926993dfa5141eb412c0378d41f310bd309cb0ac809b` |
 | re-resolve refused | `[EXPECTED] a verdict already stands; a re-judgment is an appeal` | `0x3f77f6d710ea101edeb7fe6f96f954a2d42d6ec7b75c3991690bc24d3a58f0a5` |
 | early finalize refused | `[EXPECTED] the appeal window is open for 3600 seconds after resolution` | `0x2e1569c1a37159b8bf69f56237422cb7394752689f5fdd4e1e1ac47927494935` |
@@ -239,7 +241,7 @@ same toolchain pins, same CI jobs.
    [proving ground app](https://isobar-frontend-i1kv.vercel.app) for resolved markets on real
    recorded weather: Market #2 voided when the sources disagreed, Market #1 settled Yes and
    was upheld on appeal, Market #4 settled No, and Market #3 retried when NASA POWER had no
-   value yet.
+   value yet, then resolved Yes once it published.
 
 ### Requirements
 

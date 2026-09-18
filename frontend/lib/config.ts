@@ -30,7 +30,7 @@ export const PROVING_GROUND_EXAMPLES = [
   { id: "mk-000002", text: "the sources disagreed, so it voided" },
   { id: "mk-000001", text: "Yes, upheld on appeal" },
   { id: "mk-000004", text: "No" },
-  { id: "mk-000003", text: "NASA POWER had no value yet, so the round retried" },
+  { id: "mk-000003", text: "retried while NASA POWER had no value, then resolved Yes" },
 ] as const;
 
 export type DeploymentKind = "record" | "proving-ground" | "other";

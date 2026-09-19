@@ -217,6 +217,7 @@ not one of ours) resolved from the app within the hour.
 | market | round | outcome | what the record shows | tx |
 |---|---|---|---|---|
 | #5 Houston, max temperature ≥ 33 °C on 17 Sep | 1, outside wallet, 00:51 UTC | **NO** | the first live verdict on this deployment: Open-Meteo 30.8 °C, station 32.0 °C, both under | round 1 of market #5 |
+| #5 Houston | finalized, operator, 11:27 UTC | **FINAL NO** | the appeal window closed with no appeal; nobody was on No, so the 0.04 GEN on Yes went back to its stakers | `0x0daab6dcb50f5227a35028f778c3a4ea00ef14c300143a46b35893268ef8c969` |
 | #3 Newark, max wind ≥ 7 m/s on 17 Sep | 1, operator, 00:57 UTC | RETRY | Open-Meteo unreachable for the validators; the station record flagged as truncated | `0x97544f533902d644799676cab26dff1755fa540605bff76b716d42d79fc972ba` |
 | #3 Newark | 2, outside wallet, 01:03 UTC | RETRY | both sources read (3.86 and 5.66 m/s, both under 7), but the data check judged the stored station record not enough to settle | round 2 of market #3 |
 | #3 Newark | 3, operator, 01:08 UTC | RETRY | same evidence, same judgment: "truncation; incomplete time series for the day" | `0x78f842d9a09fbe7b4ac4421c32ebae113796ab46efc18d40baf36df91bb63407` |

@@ -209,6 +209,24 @@ Calendar-free negative controls sent for real against `0x169cE1cD…9375`
 The two payable refusals are the rules-1 fund-stranding fix, proven on the
 pristine contract: 0.03 GEN claimable back, none of it absorbed.
 
+### Live resolutions on the deployment of record (19 Sep 2026)
+
+The US station lane opened at 00:00 UTC. An outside wallet (`0x10Db…CCD7`,
+not one of ours) resolved from the app within the hour.
+
+| market | round | outcome | what the record shows | tx |
+|---|---|---|---|---|
+| #5 Houston, max temperature ≥ 33 °C on 17 Sep | 1, outside wallet, 00:51 UTC | **NO** | the first live verdict on this deployment: Open-Meteo 30.8 °C, station 32.0 °C, both under | round 1 of market #5 |
+| #3 Newark, max wind ≥ 7 m/s on 17 Sep | 1, operator, 00:57 UTC | RETRY | Open-Meteo unreachable for the validators; the station record flagged as truncated | `0x97544f533902d644799676cab26dff1755fa540605bff76b716d42d79fc972ba` |
+| #3 Newark | 2, outside wallet, 01:03 UTC | RETRY | both sources read (3.86 and 5.66 m/s, both under 7), but the data check judged the stored station record not enough to settle | round 2 of market #3 |
+| #3 Newark | 3, operator, 01:08 UTC | RETRY | same evidence, same judgment: "truncation; incomplete time series for the day" | `0x78f842d9a09fbe7b4ac4421c32ebae113796ab46efc18d40baf36df91bb63407` |
+
+Newark is the station limit under honest limits, caught live: code computed
+the day's maximum from every observation, but the record the validators can
+check holds only the first hours of the day, and they would not settle money
+on it. If no round succeeds, the market voids on its timeout (3 Oct) and
+every stake is refunded. The next ruleset records a summary of the whole day.
+
 ## The evidence model, measured before it was coded
 
 Receipts in [docs/PROBE-REPORT.md](docs/PROBE-REPORT.md): source latencies
@@ -333,6 +351,13 @@ redeploy. CI allows exactly that finding and fails on any other.
   approval, so a weak quote cannot settle a missing value, but the quote is
   not yet meaningful evidence on its own. The next ruleset requires the date
   and the reading in the quote.
+- **A US station's day is stored cut short.** The recorded evidence keeps the
+  first 2,400 characters of the station's day of readings, about its first
+  five hours, while the reading itself is computed in code from the whole
+  day. The panel judges only the stored part: on 19 Sep it accepted it for
+  Houston but judged it too incomplete to settle Newark in three rounds (see
+  the live resolutions above). The next ruleset stores a summary of the whole
+  day instead.
 - **The appeal panel sees the recorded payloads, not the recorded readings.**
   It re-judges coverage and sufficiency rather than re-checking the
   extraction, so it can uphold or void a verdict but never flip Yes and No.
@@ -383,8 +408,9 @@ can answer it.
 - **Rules-3 evidence fixes:** NASA POWER requested in UTC; date and range
   checks in code; quotes that must contain the date and the reading; the
   recorded readings shown to the appeal panel; fetched text defused like
-  appeal grounds; and the sources' quality metadata (NWS quality flags, the
-  POWER header) kept for the panel to judge.
+  appeal grounds; the sources' quality metadata (NWS quality flags, the
+  POWER header) kept for the panel to judge; and a summary of a station's
+  whole day recorded in place of its first hours.
 - **Base rates on every market:** how often the threshold was crossed at
   that station on recent days, computed in the browser from public
   archives, so positions are priced from evidence.
